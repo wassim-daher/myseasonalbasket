@@ -1,200 +1,148 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Banner, type Slide } from '@/components/banner';
 import { BasketIcon, CalendarIcon, TruckIcon } from '@/components/icons';
 import { BasketMark, LeafMark, Picture } from '@/components/picture';
 import { ProductGrid } from '@/components/product-card';
-import { QtyControl } from '@/components/qty-control';
 import { SearchForm } from '@/components/search-form';
-import { inStockFirst, productsIn } from '@/lib/catalog';
+import { bestSellers, newThisSeason } from '@/lib/catalog';
 import { dictionary, format, isLocale, localized, type Dictionary, type Locale } from '@/lib/i18n';
 import { formatPrice } from '@/lib/money';
-import type { Basket, CatalogProduct } from '@/lib/shop-types';
-import { getBaskets, getCatalog, getMenu, getZones } from '@/server/shop';
+import type { Banner as BannerRow, Basket } from '@/lib/shop-types';
+import { getBanners, getBaskets, getCatalog, getMenu } from '@/server/shop';
 
-// Stock and prices change through the day, so every visit reads them fresh.
+// Stock, prices and best sellers change through the day, so every visit reads them fresh.
 export const dynamic = 'force-dynamic';
 
-const PER_SECTION = 8;
+const ROW = 6;
+
+/** Slides from Farm Agent, or the built-in ones until the farm publishes its own. */
+function slidesFor(locale: Locale, t: Dictionary, rows: BannerRow[], hasBaskets: boolean): Slide[] {
+  if (rows.length > 0) {
+    return rows.map((b) => ({
+      key: b.id,
+      headlineAr: b.headlineAr,
+      title: localized(locale, b.titleEn, b.titleAr),
+      cta: localized(locale, b.ctaEn, b.ctaAr),
+      href: b.linkPath ? `/${locale}${b.linkPath}` : `/${locale}`,
+      imagePath: b.imagePath,
+      theme: b.theme,
+    }));
+  }
+  const links = [`/${locale}/products`, hasBaskets ? `/${locale}#baskets` : `/${locale}/products`, `/${locale}/products`];
+  return t.shop.slides.map((s, i) => ({ key: `default-${i}`, headlineAr: s.headlineAr, title: s.title, cta: s.cta, href: links[i], imagePath: '', theme: s.theme as Slide['theme'] }));
+}
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = dictionary(locale);
-  const [products, baskets, menu, zones] = await Promise.all([getCatalog(), getBaskets(), getMenu(), getZones()]);
-  const available = products.filter((p) => p.availableUnits > 0);
-  const featured = [...available.filter((p) => p.featured), ...available.filter((p) => !p.featured)].slice(0, 7);
-  const latest = inStockFirst(products.filter((p) => p.isNew)).slice(0, PER_SECTION);
-  const sections = menu
-    .map((c) => ({ category: c, items: inStockFirst(productsIn(products, menu, c.slug)) }))
-    .filter((s) => s.items.length > 0);
+  const [products, baskets, menu, banners] = await Promise.all([getCatalog(), getBaskets(), getMenu(), getBanners()]);
+  const best = bestSellers(products, ROW);
+  const fresh = newThisSeason(products, ROW);
   const name = (x: { nameEn: string; nameAr: string }) => localized(locale, x.nameEn, x.nameAr);
+  const tileColours = ['sage', 'sand', 'grey'];
 
   return (
     <>
-      <section className="banner">
-        <div className="container banner-inner">
-          <div className="banner-copy">
-            <h1>{t.home.title}</h1>
-            <p>{t.home.lead}</p>
-            <a href={baskets.length ? '#baskets' : '#latest'} className="pill">{t.home.ctaBaskets}</a>
-          </div>
-          <div className="banner-art"><HeroArt /></div>
-        </div>
-      </section>
+      <Banner
+        slides={slidesFor(locale, t, banners, baskets.length > 0)}
+        locale={locale}
+        labels={{ prev: t.shop.prevSlide, next: t.shop.nextSlide, slide: t.shop.slide, region: t.home.eyebrow }}
+      />
 
       <div className="search-panel"><SearchForm locale={locale} t={t} /></div>
 
-      {featured.length > 0 && (
-        <section className="container" aria-label={t.shop.featured} style={{ paddingBottom: 20 }}>
-          <div className="mosaic">
-            {featured.map((p, i) => <MosaicTile key={p.id} product={p} index={i} locale={locale} t={t} />)}
-          </div>
-        </section>
-      )}
-
-      {baskets.length > 0 && (
-        <section id="baskets" className="section section-band" style={{ marginTop: 28 }}>
+      {best.length > 0 && (
+        <section className="section" aria-labelledby="best">
           <div className="container">
-            <SectionTitle title={t.home.basketsTitle} lead={t.home.basketsLead} />
-            <div className="basket-grid">
-              {baskets.map((b) => <BasketCard key={b.id} basket={b} locale={locale} t={t} />)}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {latest.length > 0 && (
-        <section id="latest" className="section">
-          <div className="container">
-            <SectionTitle title={t.shop.latest} />
-            <ProductGrid products={latest} locale={locale} t={t} />
+            <SectionTitle id="best" title={t.shop.bestTitle} lead={t.shop.bestLead} />
+            <ProductGrid products={best} locale={locale} t={t} tinted />
             <div className="section-more"><Link href={`/${locale}/products`} className="btn btn-primary">{t.shop.showAll}</Link></div>
           </div>
         </section>
       )}
 
-      {sections.map(({ category, items }, i) => (
-        <section key={category.id} id={category.slug} className={i % 2 === 0 ? 'section section-band' : 'section'}>
+      {baskets.length > 0 && (
+        <section id="baskets" className="section section-band" aria-labelledby="plans">
           <div className="container">
-            <SectionTitle title={name(category)} />
-            <ProductGrid products={items.slice(0, PER_SECTION)} locale={locale} t={t} />
-            <div className="section-more">
-              <Link href={`/${locale}/category/${category.slug}`} className="btn btn-primary">{format(t.shop.allProducts, { name: name(category) })}</Link>
+            <SectionTitle id="plans" title={t.shop.plansTitle} lead={t.home.basketsLead} />
+            <div className="basket-grid">
+              {baskets.map((b, i) => <BasketCard key={b.id} basket={b} locale={locale} t={t} badge={i === 0 ? t.shop.planPopular : t.shop.planTry} />)}
             </div>
           </div>
         </section>
-      ))}
+      )}
+
+      {menu.length > 0 && (
+        <section className="section" aria-labelledby="cats" style={{ paddingBottom: 12 }}>
+          <div className="container">
+            <SectionTitle id="cats" title={t.shop.categoriesTitle} />
+            <div className="category-tiles">
+              {menu.map((c, i) => (
+                <Link key={c.id} href={`/${locale}/category/${c.slug}`} className={`category-tile tile-${c.highlight ? 'offer' : tileColours[i % tileColours.length]}`}>
+                  <LeafMark width="40px" />
+                  <span>{name(c)}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {fresh.length > 0 && (
+        <section className="section" aria-labelledby="latest">
+          <div className="container">
+            <SectionTitle id="latest" title={t.shop.latest} />
+            <ProductGrid products={fresh} locale={locale} t={t} />
+            <div className="section-more"><Link href={`/${locale}/products`} className="btn btn-primary">{t.shop.showAll}</Link></div>
+          </div>
+        </section>
+      )}
 
       {products.length === 0 && baskets.length === 0 && (
         <section className="section"><p className="container muted" style={{ textAlign: 'center' }}>{t.home.nothingYet}</p></section>
       )}
-
-      <section id="how" className="section section-band">
-        <div className="container">
-          <SectionTitle title={t.nav.how} />
-          <div className="product-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-            {t.home.how.map((step, i) => (
-              <div key={step.title} style={{ background: '#fff', padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <span style={{ color: 'var(--brand)' }}>{[<BasketIcon key="b" size={28} />, <CalendarIcon key="c" size={28} />, <TruckIcon key="t" size={28} />][i]}</span>
-                <h3 style={{ fontSize: 18 }}>{step.title}</h3>
-                <p className="soft">{step.text}</p>
-              </div>
-            ))}
-          </div>
-          {zones.length > 0 && (
-            <p className="soft" style={{ textAlign: 'center', marginTop: 24 }}>
-              {t.home.deliveryTitle}: {zones.map((z) => name(z)).join(' · ')} — <Link href={`/${locale}/delivery`}>{t.nav.deliveryTerms}</Link>
-            </p>
-          )}
-        </div>
-      </section>
     </>
   );
 }
 
-function SectionTitle({ title, lead }: { title: string; lead?: string }) {
+function SectionTitle({ id, title, lead }: { id: string; title: string; lead?: string }) {
   return (
     <div className="section-title">
-      <LeafMark width="34px" />
-      <h2>{title}</h2>
+      <svg width="36" height="36" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M50 88C50 60 58 30 86 14c4 30-8 60-36 74z" fill="var(--brand)" />
+        <path d="M50 88C48 64 36 44 14 36c-2 26 12 46 36 52z" fill="var(--accent)" />
+      </svg>
+      <h2 id={id}>{title}</h2>
       {lead && <p>{lead}</p>}
     </div>
   );
 }
 
-/** Tiles: one tall, two wide, then four narrow, like a market's front table. */
-function MosaicTile({ product, index, locale, t }: { product: CatalogProduct; index: number; locale: Locale; t: Dictionary }) {
-  const shape = index === 0 ? 'big' : index <= 2 ? 'wide' : '';
-  const name = localized(locale, product.nameEn, product.nameAr);
-  const unit = localized(locale, product.unitNameEn, product.unitNameAr);
-  const href = `/${locale}/products/${product.slug}`;
-  const art = (
-    <div className="tile-art" style={{ aspectRatio: shape === 'wide' ? '1 / 1' : '4 / 3' }}>
-      <Picture src={product.imagePath} alt="" seed={product.slug} kind="product" />
-    </div>
-  );
-  return (
-    <article className={`mosaic-tile ${shape}`}>
-      {shape !== 'wide' && art}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <Link href={href} className="tile-name">{name} | {unit}</Link>
-        <span className="tile-price">{formatPrice(product.priceUsd)}</span>
-        <QtyControl kind="product" id={product.id} available={product.availableUnits} name={name} labels={t.product} />
-      </div>
-      {shape === 'wide' && art}
-    </article>
-  );
-}
-
-function BasketCard({ basket, locale, t }: { basket: Basket; locale: Locale; t: Dictionary }) {
+function BasketCard({ basket, locale, t, badge }: { basket: Basket; locale: Locale; t: Dictionary; badge: string }) {
   const name = localized(locale, basket.nameEn, basket.nameAr);
   const href = `/${locale}/baskets/${basket.slug}`;
-  const items = basket.contents.length;
+  const soldOut = basket.availableUnits <= 0;
   return (
     <article className="basket-card">
-      <Link href={href} className="card-media" style={{ background: 'var(--tile-sand)' }} tabIndex={-1} aria-hidden="true">
+      <Link href={href} className="card-media" tabIndex={-1} aria-hidden="true">
         {basket.imagePath ? <Picture src={basket.imagePath} alt="" seed={basket.slug} kind="basket" cover /> : <div className="picture"><BasketMark width="34%" /></div>}
-        {basket.availableUnits <= 0 && <span className="badge badge-muted">{t.shop.soldBadge}</span>}
+        <span className={soldOut ? 'badge badge-muted' : 'badge'}>{soldOut ? t.shop.soldBadge : badge}</span>
       </Link>
       <div className="card-body">
         <h3><Link href={href}>{name}</Link></h3>
-        <p className="soft small">{localized(locale, basket.descriptionEn, basket.descriptionAr)}</p>
+        <p className="muted small">{localized(locale, basket.descriptionEn, basket.descriptionAr)}</p>
         <ul className="basket-facts">
-          <li><BasketIcon /> {format(t.shop.basketItems, { count: items })}</li>
+          <li><BasketIcon /> {format(t.shop.basketItems, { count: basket.contents.length })}</li>
           <li><CalendarIcon /> {t.shop.basketDay}</li>
           <li><TruckIcon /> {t.shop.basketPay}</li>
         </ul>
         <div className="card-foot">
           <span className="price" style={{ fontSize: 18 }}>{formatPrice(basket.priceUsd)}</span>
-          {basket.availableUnits > 0
-            ? <QtyControl kind="basket" id={basket.id} available={basket.availableUnits} name={name} labels={t.product} />
-            : <span className="stock stock-out">{t.product.soldOut}</span>}
+          <Link href={href} className="btn btn-primary">{t.shop.planOrder}</Link>
         </div>
       </div>
     </article>
-  );
-}
-
-function HeroArt() {
-  return (
-    <svg viewBox="0 0 420 300" width="100%" style={{ maxWidth: 440 }} aria-hidden="true">
-      <ellipse cx="210" cy="276" rx="170" ry="12" fill="#b9c7a3" opacity="0.6" />
-      <g>
-        <circle cx="120" cy="138" r="34" fill="#8fb36a" />
-        <circle cx="160" cy="118" r="30" fill="#e0a868" />
-        <circle cx="196" cy="140" r="28" fill="#6c2b4a" />
-        <path d="M70 150h160l-16 108a10 10 0 0 1-10 8H96a10 10 0 0 1-10-8z" fill="#a8743f" />
-        <path d="M80 176h140M84 202h132M88 228h124" stroke="#8a5c2e" strokeWidth="4" />
-        <path d="M100 150c0-50 22-82 50-82s50 32 50 82" fill="none" stroke="#7a5128" strokeWidth="7" />
-      </g>
-      <g>
-        <circle cx="282" cy="150" r="30" fill="#d1342b" />
-        <circle cx="322" cy="140" r="28" fill="#f2cf7a" />
-        <circle cx="352" cy="162" r="24" fill="#b9d38a" />
-        <path d="M250 168h130l-12 88a10 10 0 0 1-10 8H272a10 10 0 0 1-10-8z" fill="#3e5a2b" />
-        <path d="M258 196h114M262 222h106" stroke="#2b4019" strokeWidth="4" />
-        <path d="M300 112c6-22 30-30 48-24-6 18-26 28-48 24z" fill="#3e5a2b" />
-      </g>
-    </svg>
   );
 }

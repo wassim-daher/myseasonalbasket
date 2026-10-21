@@ -10,7 +10,7 @@ export const direction = (locale: Locale) => (locale === 'ar' ? 'rtl' : 'ltr');
 
 const en = {
   brand: 'My Seasonal Basket',
-  nav: { home: 'Home', deliveryTerms: 'Delivery', story: 'Our story', contact: 'Contact us', baskets: 'Seasonal baskets', offers: 'Offers', search: 'Search', menu: 'Menu', closeMenu: 'Close menu', allIn: 'All {name}', products: 'Farm products', how: 'How it works', delivery: 'Delivery', cart: 'Cart', otherLanguage: 'عربي' },
+  nav: { home: 'Home', deliveryTerms: 'Delivery', story: 'Our story', contact: 'Contact us', baskets: 'Seasonal baskets', offers: 'Offers', search: 'Search', menu: 'Menu', openMenu: 'Open menu', closeMenu: 'Close menu', plans: 'Seasonal basket plans', allIn: 'All {name}', products: 'Farm products', how: 'How it works', delivery: 'Delivery', cart: 'Cart', otherLanguage: 'عربي' },
   home: {
     eyebrow: 'Fresh from our farm in Lebanon',
     title: 'Picked this week on our farm, at your door on your delivery day.',
@@ -50,6 +50,27 @@ const en = {
     basketDay: 'Choose your delivery day at checkout',
     basketPay: 'Pay on delivery, Wish Money or OMT',
     allTitle: 'All products',
+    bestTitle: 'Best sellers',
+    bestLead: 'What our customers order most this season.',
+    bestBadge: 'Best seller',
+    soonBadge: 'Coming soon',
+    plansTitle: 'Seasonal basket plans',
+    planPopular: 'Most popular',
+    planTry: 'Try it',
+    planOrder: 'Order this basket',
+    categoriesTitle: 'Shop by category',
+    newsTitle: 'Hear about the new harvest first',
+    newsLead: 'New season produce, baskets and offers on WhatsApp.',
+    newsButton: 'Follow us on WhatsApp',
+    origin: 'From our farm',
+    prevSlide: 'Previous slide',
+    nextSlide: 'Next slide',
+    slide: 'Slide {n}',
+    slides: [
+      { headlineAr: 'زيت جديد', title: 'New season olive oil is here', cta: 'Order your olive oil', theme: 'olive' },
+      { headlineAr: 'سلّة كل أسبوع', title: 'A seasonal basket, every week', cta: 'Choose a basket', theme: 'earth' },
+      { headlineAr: 'من المزرعة لبابك', title: 'Picked this week, at your door', cta: 'Shop fresh produce', theme: 'leaf' },
+    ],
   },
   pages: {
     deliveryTitle: 'Delivery',
@@ -165,7 +186,7 @@ type Dictionary = typeof en;
 
 const ar: Dictionary = {
   brand: 'سلّتي الموسمية',
-  nav: { home: 'الرئيسية', deliveryTerms: 'التوصيل', story: 'قصّتنا', contact: 'اتصل بنا', baskets: 'السلال الموسمية', offers: 'العروض', search: 'بحث', menu: 'القائمة', closeMenu: 'إغلاق القائمة', allIn: 'كل {name}', products: 'منتجات المزرعة', how: 'كيف نعمل', delivery: 'التوصيل', cart: 'السلّة', otherLanguage: 'English' },
+  nav: { home: 'الرئيسية', deliveryTerms: 'التوصيل', story: 'قصّتنا', contact: 'اتصل بنا', baskets: 'السلال الموسمية', offers: 'العروض', search: 'بحث', menu: 'القائمة', openMenu: 'افتح القائمة', closeMenu: 'إغلاق القائمة', plans: 'السلال الموسمية', allIn: 'كل {name}', products: 'منتجات المزرعة', how: 'كيف نعمل', delivery: 'التوصيل', cart: 'السلّة', otherLanguage: 'English' },
   home: {
     eyebrow: 'طازج من مزرعتنا في لبنان',
     title: 'قطفناه هذا الأسبوع من مزرعتنا، ويصلك إلى باب بيتك في يوم التوصيل.',
@@ -205,6 +226,27 @@ const ar: Dictionary = {
     basketDay: 'اختر يوم التوصيل عند إتمام الطلب',
     basketPay: 'الدفع عند الاستلام أو عبر Wish Money أو OMT',
     allTitle: 'كل المنتجات',
+    bestTitle: 'الأكثر مبيعاً',
+    bestLead: 'ما يطلبه زبائننا أكثر هذا الموسم.',
+    bestBadge: 'الأكثر مبيعاً',
+    soonBadge: 'قريباً',
+    plansTitle: 'السلال الموسمية',
+    planPopular: 'الأكثر طلباً',
+    planTry: 'جرّبها',
+    planOrder: 'اطلب هذه السلّة',
+    categoriesTitle: 'تسوّق حسب الفئة',
+    newsTitle: 'كن أوّل من يعرف بالقطاف الجديد',
+    newsLead: 'منتجات الموسم الجديد والسلال والعروض على واتساب.',
+    newsButton: 'تابعنا على واتساب',
+    origin: 'من مزرعتنا',
+    prevSlide: 'الشريحة السابقة',
+    nextSlide: 'الشريحة التالية',
+    slide: 'الشريحة {n}',
+    slides: [
+      { headlineAr: 'زيت جديد', title: 'وصل زيت الزيتون من الموسم الجديد', cta: 'اطلب زيت الزيتون', theme: 'olive' },
+      { headlineAr: 'سلّة كل أسبوع', title: 'سلّة موسمية كل أسبوع', cta: 'اختر سلّتك', theme: 'earth' },
+      { headlineAr: 'من المزرعة لبابك', title: 'قطفناه هذا الأسبوع ويصلك إلى بابك', cta: 'تسوّق المنتجات الطازجة', theme: 'leaf' },
+    ],
   },
   pages: {
     deliveryTitle: 'التوصيل',

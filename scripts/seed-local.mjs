@@ -7,6 +7,7 @@
 // Usage: SEED_DATABASE_URL=postgresql://<owner>@127.0.0.1:54322/postgres pnpm local:seed
 // Prints the farm id to put in SHOP_FARM_ID.
 import pg from 'pg';
+import crypto from 'node:crypto';
 
 const url = process.env.SEED_DATABASE_URL;
 if (!url) {
@@ -64,8 +65,9 @@ try {
     [27, 'Fig jam', 'مربّى التين', 'kg', '400 g jar', 'مرطبان ٤٠٠ غ', 0.4, 6, '7.50', 2026, 85, true],
     [28, 'Free-range eggs', 'بيض بلدي', 'unit', '30 eggs', '٣٠ بيضة', 30, 300, '9.00', 2026, 86, true],
     [29, 'Pomegranates', 'رمّان', 'kg', null, null, null, 18, '2.50', 2026, 82, true],
+    [30, 'Kaki (persimmon)', 'كاكي', 'kg', null, null, null, 0, '3.50', 2026, 82, false, true],
   ];
-  for (const [n, name, ar, unit, pack, packAr, size, stock, price, year, category, featured] of items) {
+  for (const [n, name, ar, unit, pack, packAr, size, stock, price, year, category, featured, comingSoon = false] of items) {
     const product = id(n), item = id(n + 100), lot = id(n + 200), pkg = pack ? id(n + 300) : null;
     await client.query(`INSERT INTO "MasterRecord"(id,"farmId",kind,name,"nameAr","createdBy","updatedAt") VALUES ($1,$2,'product',$3,$4,$5,now())`, [product, FARM, name, ar, ACTOR]);
     await client.query(`INSERT INTO "InventoryItem"(id,"farmId","productId","baseUnit") VALUES ($1,$2,$3,$4)`, [item, FARM, product, unit]);
@@ -79,10 +81,10 @@ try {
       );
     }
     await client.query(`INSERT INTO "ProductPrice"(id,"farmId","itemId","packageId","productionYear","unitPriceUsd","updatedBy","updatedAt") VALUES (gen_random_uuid(),$1,$2,$3,NULL,$4,$5,now())`, [FARM, item, pkg, price, ACTOR]);
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + (pack ? '-' + pack.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '') : '');
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + (pack ? '-' + pack.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '') : '');
     await client.query(
-      `INSERT INTO "ShopProduct"(id,"farmId","itemId","packageId",slug,"nameEn","nameAr","descriptionEn","descriptionAr",published,"sortOrder","categoryId",featured) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true,$10,$11,$12)`,
-      [id(n + 400), FARM, item, pkg, slug, name, ar, `Sample description for ${name.toLowerCase()}.`, `وصف تجريبي لـ${ar}.`, n, id(category), featured],
+      `INSERT INTO "ShopProduct"(id,"farmId","itemId","packageId",slug,"nameEn","nameAr","descriptionEn","descriptionAr",published,"sortOrder","categoryId",featured,"comingSoon") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true,$10,$11,$12,$13)`,
+      [id(n + 400), FARM, item, pkg, slug, name, ar, `Sample description for ${name.toLowerCase()}.`, `وصف تجريبي لـ${ar}.`, n, id(category), featured, comingSoon],
     );
   }
 
@@ -105,6 +107,12 @@ try {
     for (const [i, [item, pkg, qty]] of contents.entries()) {
       await client.query(`INSERT INTO "ShopBasketPlanItem"(id,"farmId","planId","itemId","packageId",quantity,"sortOrder") VALUES (gen_random_uuid(),$1,$2,$3,$4,$5,$6)`, [FARM, id(n), id(item), pkg ? id(pkg) : null, qty, i]);
     }
+  }
+  // Two sample web orders so the best-seller row has something to rank.
+  const slot = (await client.query(`SELECT s.id, s.weekday FROM "ShopDeliverySlot" s WHERE s."zoneId"=$1 ORDER BY weekday, "startTime" LIMIT 1`, [id(52)])).rows[0];
+  const day = (await client.query(`SELECT d::date::text AS d FROM generate_series(current_date+2, current_date+9, '1 day') d WHERE extract(dow FROM d)=$1 LIMIT 1`, [slot.weekday])).rows[0].d;
+  for (const lines of [[{ kind: 'product', id: id(420), quantity: 3 }, { kind: 'product', id: id(421), quantity: 4 }], [{ kind: 'product', id: id(420), quantity: 1 }, { kind: 'product', id: id(427), quantity: 2 }]]) {
+    await client.query('SELECT shop_place_order($1,$2::jsonb)', [FARM, JSON.stringify({ requestKey: crypto.randomUUID(), contactName: 'Sample customer', phone: '+961 70 000 001', zoneId: id(52), slotId: slot.id, deliveryDate: day, addressLine: 'Sample address', paymentMethod: 'cod', lines })]);
   }
   await client.query('COMMIT');
   console.log(`Sample store seeded. SHOP_FARM_ID=${FARM}`);

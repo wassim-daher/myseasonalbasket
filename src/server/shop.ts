@@ -2,7 +2,7 @@ import 'server-only';
 import { farmId, pool } from './db';
 import type { CheckoutCommand } from '@/lib/checkout';
 import type {
-  Basket, CatalogProduct, Category, DeliveryOption, MenuCategory, DeliveryZone, OrderSummary, PaymentMethod, PlacedOrder, ShopSettings,
+  Banner, Basket, CatalogProduct, Category, DeliveryOption, MenuCategory, DeliveryZone, OrderSummary, PaymentMethod, PlacedOrder, ShopSettings,
 } from '@/lib/shop-types';
 
 // Everything the store reads or writes goes through these functions. Prices,
@@ -13,11 +13,21 @@ const money = (value: unknown) => String(value);
 export async function getCatalog(): Promise<CatalogProduct[]> {
   const { rows } = await pool().query(
     `SELECT id, slug, "nameEn", "nameAr", "descriptionEn", "descriptionAr", "categoryId", "imagePath",
-            "unitNameEn", "unitNameAr", "priceUsd"::text AS "priceUsd", "availableUnits", featured, "isNew"
+            "unitNameEn", "unitNameAr", "priceUsd"::text AS "priceUsd", "availableUnits", featured, "isNew", "comingSoon", "salesRank"
        FROM shop_catalog($1)`,
     [farmId()],
   );
   return rows.map((r) => ({ ...r, priceUsd: money(r.priceUsd) }));
+}
+
+/** Published home page slides, in order. */
+export async function getBanners(): Promise<Banner[]> {
+  const { rows } = await pool().query<Banner>(
+    `SELECT id::text, "headlineAr", "titleEn", "titleAr", "ctaEn", "ctaAr", "linkPath", "imagePath", theme
+       FROM "ShopBanner" WHERE "farmId"=$1 AND published ORDER BY "sortOrder", "createdAt"`,
+    [farmId()],
+  );
+  return rows;
 }
 
 /** Published categories, top level first, each with its sub-categories, in menu order. */

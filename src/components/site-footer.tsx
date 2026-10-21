@@ -11,10 +11,12 @@ export function SiteFooter({ locale, t, menu, whatsappPhone }: { locale: Locale;
       <div className="footer-strip">
         <div className="container">
           <div>
-            <strong>{t.home.deliveryTitle}</strong>
-            <span className="small muted">{t.pages.deliveryCutoff}</span>
+            <strong>{t.shop.newsTitle}</strong>
+            <span className="small muted">{wa ? t.shop.newsLead : t.pages.deliveryCutoff}</span>
           </div>
-          <Link href={`/${locale}/delivery`} className="btn btn-primary">{t.nav.deliveryTerms}</Link>
+          {wa
+            ? <a href={wa} className="btn btn-primary" target="_blank" rel="noopener noreferrer"><WhatsAppIcon size={20} /> {t.shop.newsButton}</a>
+            : <Link href={`/${locale}/delivery`} className="btn btn-primary">{t.nav.deliveryTerms}</Link>}
         </div>
       </div>
       <div className="container footer-grid">

@@ -44,3 +44,23 @@ export function searchProducts(products: CatalogProduct[], query: string) {
 export function inStockFirst(products: CatalogProduct[]) {
   return [...products].sort((a, b) => Number(b.availableUnits > 0) - Number(a.availableUnits > 0));
 }
+
+/**
+ * Best sellers for the home page: products ranked by recent sales first, then the
+ * farm's featured picks, then anything else in stock, so the row is never empty
+ * while the shop is new. Only products that can be bought are shown.
+ */
+export function bestSellers(products: CatalogProduct[], count: number) {
+  const buyable = products.filter((p) => p.availableUnits > 0);
+  const ranked = buyable.filter((p) => p.salesRank !== null).sort((a, b) => (a.salesRank ?? 0) - (b.salesRank ?? 0));
+  const picked = new Set(ranked.map((p) => p.id));
+  const featured = buyable.filter((p) => p.featured && !picked.has(p.id));
+  featured.forEach((p) => picked.add(p.id));
+  const rest = buyable.filter((p) => !picked.has(p.id));
+  return [...ranked, ...featured, ...rest].slice(0, count);
+}
+
+/** New products and those coming soon, newest season first. */
+export function newThisSeason(products: CatalogProduct[], count: number) {
+  return products.filter((p) => p.isNew || p.comingSoon).sort((a, b) => Number(b.availableUnits > 0) - Number(a.availableUnits > 0)).slice(0, count);
+}

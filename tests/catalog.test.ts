@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { findCategory, inStockFirst, normalize, productsIn, searchProducts } from '@/lib/catalog';
+import { bestSellers, findCategory, inStockFirst, newThisSeason, normalize, productsIn, searchProducts } from '@/lib/catalog';
 import type { CatalogProduct, MenuCategory } from '@/lib/shop-types';
 
 const product = (id: string, over: Partial<CatalogProduct>): CatalogProduct => ({
   id, slug: id, nameEn: '', nameAr: '', descriptionEn: '', descriptionAr: '', categoryId: null, imagePath: '',
-  unitNameEn: 'kg', unitNameAr: 'كغ', priceUsd: '1.00', availableUnits: 5, featured: false, isNew: false, ...over,
+  unitNameEn: 'kg', unitNameAr: 'كغ', priceUsd: '1.00', availableUnits: 5, featured: false, isNew: false, comingSoon: false, salesRank: null, ...over,
 });
 
 const menu: MenuCategory[] = [
@@ -48,5 +48,22 @@ describe('catalog', () => {
 
   it('puts what is in stock first', () => {
     expect(inStockFirst(products).at(-1)?.id).toBe('fig');
+  });
+
+  it('picks best sellers by rank, then featured, then the rest, never sold out', () => {
+    const list = [
+      product('a', { featured: true }),
+      product('b', { salesRank: 2 }),
+      product('c', { salesRank: 1 }),
+      product('d', { salesRank: 3, availableUnits: 0 }),
+      product('e', {}),
+    ];
+    expect(bestSellers(list, 4).map((p) => p.id)).toEqual(['c', 'b', 'a', 'e']);
+    expect(bestSellers(list, 2).map((p) => p.id)).toEqual(['c', 'b']);
+  });
+
+  it('lists new and coming-soon products, buyable ones first', () => {
+    const list = [product('soon', { comingSoon: true, availableUnits: 0 }), product('new', { isNew: true }), product('old', {})];
+    expect(newThisSeason(list, 6).map((p) => p.id)).toEqual(['new', 'soon']);
   });
 });

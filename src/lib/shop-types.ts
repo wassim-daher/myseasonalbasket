@@ -18,6 +18,21 @@ export type CatalogProduct = {
   availableUnits: number;
   featured: boolean;
   isNew: boolean;
+  comingSoon: boolean;
+  /** 1 = best seller over the last 90 days; null when it hasn't sold yet. */
+  salesRank: number | null;
+};
+
+export type Banner = {
+  id: string;
+  headlineAr: string;
+  titleEn: string;
+  titleAr: string;
+  ctaEn: string;
+  ctaAr: string;
+  linkPath: string;
+  imagePath: string;
+  theme: 'olive' | 'earth' | 'leaf';
 };
 
 export type Category = {
