@@ -2,7 +2,7 @@ import 'server-only';
 import { farmId, pool } from './db';
 import type { CheckoutCommand } from '@/lib/checkout';
 import type {
-  Basket, CatalogProduct, DeliveryOption, DeliveryZone, OrderSummary, PaymentMethod, PlacedOrder, ShopSettings,
+  Basket, CatalogProduct, Category, DeliveryOption, MenuCategory, DeliveryZone, OrderSummary, PaymentMethod, PlacedOrder, ShopSettings,
 } from '@/lib/shop-types';
 
 // Everything the store reads or writes goes through these functions. Prices,
@@ -12,12 +12,25 @@ const money = (value: unknown) => String(value);
 
 export async function getCatalog(): Promise<CatalogProduct[]> {
   const { rows } = await pool().query(
-    `SELECT id, slug, "nameEn", "nameAr", "descriptionEn", "descriptionAr", category, "imagePath",
-            "unitNameEn", "unitNameAr", "priceUsd"::text AS "priceUsd", "availableUnits"
+    `SELECT id, slug, "nameEn", "nameAr", "descriptionEn", "descriptionAr", "categoryId", "imagePath",
+            "unitNameEn", "unitNameAr", "priceUsd"::text AS "priceUsd", "availableUnits", featured, "isNew"
        FROM shop_catalog($1)`,
     [farmId()],
   );
   return rows.map((r) => ({ ...r, priceUsd: money(r.priceUsd) }));
+}
+
+/** Published categories, top level first, each with its sub-categories, in menu order. */
+export async function getMenu(): Promise<MenuCategory[]> {
+  const { rows } = await pool().query<Category & { sortOrder: number }>(
+    `SELECT id, "parentId", slug, "nameEn", "nameAr", highlight, "sortOrder"
+       FROM "ShopCategory" WHERE "farmId"=$1 AND published ORDER BY "sortOrder", "nameEn"`,
+    [farmId()],
+  );
+  const strip = ({ id, parentId, slug, nameEn, nameAr, highlight }: Category) => ({ id, parentId, slug, nameEn, nameAr, highlight });
+  return rows
+    .filter((c) => !c.parentId)
+    .map((top) => ({ ...strip(top), children: rows.filter((c) => c.parentId === top.id).map(strip) }));
 }
 
 export async function getBaskets(): Promise<Basket[]> {

@@ -37,15 +37,35 @@ try {
   await client.query(`INSERT INTO "UserProfile"(id,name,"updatedAt") VALUES ($1,'Sample data',now()) ON CONFLICT (id) DO NOTHING`, [ACTOR]);
   await client.query(`INSERT INTO "InventoryLocation"(id,"farmId",name,"createdBy") VALUES ($1,$2,'Sample store room',$3)`, [id(10), FARM, ACTOR]);
 
-  // [n, product name, Arabic, base unit, package name, package Arabic, package size, stock in base unit, price, lot year]
-  const items = [
-    [20, 'Olive oil', 'زيت زيتون', 'kg', '1 L bottle', 'قنينة ١ ليتر', 0.92, 46, '14.00', 2025],
-    [21, 'Tomatoes', 'بندورة', 'kg', null, null, null, 60, '1.75', 2026],
-    [22, 'Cucumbers', 'خيار', 'kg', null, null, null, 40, '1.50', 2026],
-    [23, 'Zaatar', 'زعتر', 'kg', '250 g jar', 'مرطبان ٢٥٠ غ', 0.25, 3, '6.00', 2026],
-    [24, 'Figs', 'تين', 'kg', '1 kg box', 'علبة ١ كغ', 1, 0, '5.00', 2026],
+  // Menu: [n, slug, English, Arabic, parent n, highlight]
+  const categories = [
+    [80, 'fruits-vegetables', 'Fruits & Vegetables', 'خضار وفاكهة', null, false],
+    [81, 'vegetables', 'Fresh vegetables', 'خضار طازجة', 80, false],
+    [82, 'fruits', 'Fresh fruits', 'فاكهة طازجة', 80, false],
+    [83, 'mouneh', 'Mouneh', 'مونة', null, false],
+    [84, 'olive-oil', 'Olive oil', 'زيت الزيتون', 83, false],
+    [85, 'preserves', 'Preserves & herbs', 'مربّيات وأعشاب', 83, false],
+    [86, 'eggs-dairy', 'Eggs', 'بيض', null, false],
+    [87, 'offers', 'Offers %', 'العروض ٪', null, true],
   ];
-  for (const [n, name, ar, unit, pack, packAr, size, stock, price, year] of items) {
+  for (const [n, slug, name, ar, parent, highlight] of categories) {
+    await client.query(`INSERT INTO "ShopCategory"(id,"farmId",slug,"nameEn","nameAr","parentId",highlight,"sortOrder") VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`, [id(n), FARM, slug, name, ar, parent ? id(parent) : null, highlight, n]);
+  }
+
+  // [n, product name, Arabic, base unit, package name, package Arabic, package size, stock in base unit, price, lot year, category n, featured]
+  const items = [
+    [20, 'Olive oil', 'زيت زيتون', 'kg', '1 L bottle', 'قنينة ١ ليتر', 0.92, 46, '14.00', 2025, 84, true],
+    [21, 'Tomatoes', 'بندورة', 'kg', null, null, null, 60, '1.75', 2026, 81, true],
+    [22, 'Cucumbers', 'خيار', 'kg', null, null, null, 40, '1.50', 2026, 81, false],
+    [23, 'Zaatar', 'زعتر', 'kg', '250 g jar', 'مرطبان ٢٥٠ غ', 0.25, 3, '6.00', 2026, 85, true],
+    [24, 'Figs', 'تين', 'kg', '1 kg box', 'علبة ١ كغ', 1, 0, '5.00', 2026, 82, false],
+    [25, 'Grapes', 'عنب', 'kg', null, null, null, 25, '3.00', 2026, 82, true],
+    [26, 'Eggplant', 'باذنجان', 'kg', null, null, null, 30, '1.25', 2026, 81, false],
+    [27, 'Fig jam', 'مربّى التين', 'kg', '400 g jar', 'مرطبان ٤٠٠ غ', 0.4, 6, '7.50', 2026, 85, true],
+    [28, 'Free-range eggs', 'بيض بلدي', 'unit', '30 eggs', '٣٠ بيضة', 30, 300, '9.00', 2026, 86, true],
+    [29, 'Pomegranates', 'رمّان', 'kg', null, null, null, 18, '2.50', 2026, 82, true],
+  ];
+  for (const [n, name, ar, unit, pack, packAr, size, stock, price, year, category, featured] of items) {
     const product = id(n), item = id(n + 100), lot = id(n + 200), pkg = pack ? id(n + 300) : null;
     await client.query(`INSERT INTO "MasterRecord"(id,"farmId",kind,name,"nameAr","createdBy","updatedAt") VALUES ($1,$2,'product',$3,$4,$5,now())`, [product, FARM, name, ar, ACTOR]);
     await client.query(`INSERT INTO "InventoryItem"(id,"farmId","productId","baseUnit") VALUES ($1,$2,$3,$4)`, [item, FARM, product, unit]);
@@ -61,8 +81,8 @@ try {
     await client.query(`INSERT INTO "ProductPrice"(id,"farmId","itemId","packageId","productionYear","unitPriceUsd","updatedBy","updatedAt") VALUES (gen_random_uuid(),$1,$2,$3,NULL,$4,$5,now())`, [FARM, item, pkg, price, ACTOR]);
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + (pack ? '-' + pack.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '') : '');
     await client.query(
-      `INSERT INTO "ShopProduct"(id,"farmId","itemId","packageId",slug,"nameEn","nameAr","descriptionEn","descriptionAr",published,"sortOrder") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true,$10)`,
-      [id(n + 400), FARM, item, pkg, slug, name, ar, `Sample description for ${name.toLowerCase()}.`, `وصف تجريبي لـ${ar}.`, n],
+      `INSERT INTO "ShopProduct"(id,"farmId","itemId","packageId",slug,"nameEn","nameAr","descriptionEn","descriptionAr",published,"sortOrder","categoryId",featured) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true,$10,$11,$12)`,
+      [id(n + 400), FARM, item, pkg, slug, name, ar, `Sample description for ${name.toLowerCase()}.`, `وصف تجريبي لـ${ar}.`, n, id(category), featured],
     );
   }
 

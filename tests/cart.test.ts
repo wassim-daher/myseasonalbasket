@@ -6,7 +6,7 @@ const A = '11111111-1111-4111-8111-111111111111';
 const B = '22222222-2222-4222-8222-222222222222';
 
 const product = (over: Partial<CatalogProduct> = {}): CatalogProduct => ({
-  id: A, slug: 'olive-oil', nameEn: 'Olive oil', nameAr: 'زيت', descriptionEn: '', descriptionAr: '', category: '', imagePath: '',
+  id: A, slug: 'olive-oil', nameEn: 'Olive oil', nameAr: 'زيت', descriptionEn: '', descriptionAr: '', categoryId: null, imagePath: '', featured: false, isNew: false,
   unitNameEn: '1 L', unitNameAr: '١ ل', priceUsd: '12.50', availableUnits: 5, ...over,
 });
 const basket = (over: Partial<Basket> = {}): Basket => ({

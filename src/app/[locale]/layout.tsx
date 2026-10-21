@@ -3,12 +3,12 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import '../globals.css';
 import { CartProvider } from '@/components/cart-context';
+import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { dictionary, direction, isLocale, locales } from '@/lib/i18n';
+import { dictionary, direction, isLocale } from '@/lib/i18n';
+import { getBaskets, getMenu, getSettings } from '@/server/shop';
 
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -25,32 +25,35 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export const viewport: Viewport = { themeColor: '#3e5a2b', width: 'device-width', initialScale: 1 };
 
+/** The header menu and footer still render if the shop data can't be read. */
+async function shell() {
+  try {
+    const [menu, baskets, settings] = await Promise.all([getMenu(), getBaskets(), getSettings()]);
+    return { menu, hasBaskets: baskets.length > 0, whatsappPhone: settings.whatsappPhone };
+  } catch (error) {
+    console.error('shop shell failed', error);
+    return { menu: [], hasBaskets: false, whatsappPhone: '' };
+  }
+}
+
 export default async function LocaleLayout({ children, params }: { children: ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = dictionary(locale);
+  const { menu, hasBaskets, whatsappPhone } = await shell();
   return (
     <html lang={locale} dir={direction(locale)}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- one shared layout per language */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap"
-        />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Tajawal:wght@400;500;700&display=swap" />
       </head>
       <body>
         <CartProvider>
-          <SiteHeader locale={locale} t={t} />
+          <SiteHeader locale={locale} t={t} menu={menu} hasBaskets={hasBaskets} />
           <main>{children}</main>
-          <footer className="site-footer">
-            <div className="container">
-              <strong style={{ fontFamily: 'var(--font-display)', color: 'var(--ink)' }}>{t.brand}</strong>
-              <span>{t.footer.location}</span>
-              <span>myseasonalbasket.com</span>
-            </div>
-          </footer>
+          <SiteFooter locale={locale} t={t} menu={menu} whatsappPhone={whatsappPhone} />
         </CartProvider>
       </body>
     </html>

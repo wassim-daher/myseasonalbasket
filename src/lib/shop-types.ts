@@ -10,13 +10,27 @@ export type CatalogProduct = {
   nameAr: string;
   descriptionEn: string;
   descriptionAr: string;
-  category: string;
+  categoryId: string | null;
   imagePath: string;
   unitNameEn: string;
   unitNameAr: string;
   priceUsd: string;
   availableUnits: number;
+  featured: boolean;
+  isNew: boolean;
 };
+
+export type Category = {
+  id: string;
+  parentId: string | null;
+  slug: string;
+  nameEn: string;
+  nameAr: string;
+  highlight: boolean;
+};
+
+/** A top-level menu entry with its sub-categories. */
+export type MenuCategory = Category & { children: Category[] };
 
 export type BasketContent = { nameEn: string; nameAr: string; quantity: string; unitNameEn: string; unitNameAr: string };
 

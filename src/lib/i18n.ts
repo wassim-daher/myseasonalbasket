@@ -10,7 +10,7 @@ export const direction = (locale: Locale) => (locale === 'ar' ? 'rtl' : 'ltr');
 
 const en = {
   brand: 'My Seasonal Basket',
-  nav: { baskets: 'Baskets', products: 'Farm products', how: 'How it works', delivery: 'Delivery', cart: 'Cart', otherLanguage: 'عربي' },
+  nav: { home: 'Home', deliveryTerms: 'Delivery', story: 'Our story', contact: 'Contact us', baskets: 'Seasonal baskets', offers: 'Offers', search: 'Search', menu: 'Menu', closeMenu: 'Close menu', allIn: 'All {name}', products: 'Farm products', how: 'How it works', delivery: 'Delivery', cart: 'Cart', otherLanguage: 'عربي' },
   home: {
     eyebrow: 'Fresh from our farm in Lebanon',
     title: 'Picked this week on our farm, at your door on your delivery day.',
@@ -31,6 +31,40 @@ const en = {
     deliveryTitle: 'Where we deliver',
     deliveryFee: 'Delivery {fee}',
     deliveryMin: 'minimum order {min}',
+  },
+  shop: {
+    searchPlaceholder: 'Search products',
+    searchButton: 'Search',
+    featured: 'Picked for you',
+    latest: 'New this season',
+    showAll: 'Show all',
+    allProducts: 'All {name} products',
+    resultsFor: '{count} results for “{q}”',
+    noResults: 'Nothing matches “{q}”. Try another word.',
+    emptyCategory: 'Nothing in this category right now. Check back soon.',
+    newBadge: 'New',
+    lowBadge: 'Few left',
+    soldBadge: 'Sold out',
+    whatsappFloat: 'Order on WhatsApp',
+    basketItems: '{count} products from this week’s harvest',
+    basketDay: 'Choose your delivery day at checkout',
+    basketPay: 'Pay on delivery, Wish Money or OMT',
+    allTitle: 'All products',
+  },
+  pages: {
+    deliveryTitle: 'Delivery',
+    deliveryIntro: 'We deliver on fixed days so everything is picked fresh the day before. Choose your area and day at checkout.',
+    deliveryArea: 'Area',
+    deliveryFee: 'Fee',
+    deliveryMin: 'Minimum order',
+    deliveryDays: 'Delivery days',
+    noMinimum: 'None',
+    deliveryCutoff: 'Orders close 24 hours before each delivery window.',
+    storyTitle: 'Our story',
+    storyBody: '[Tell your farm’s story here: who you are, where the farm is, how you grow and harvest.]',
+    contactTitle: 'Contact us',
+    contactIntro: 'The quickest way to reach us is WhatsApp.',
+    contactWhatsapp: 'Message us on WhatsApp',
   },
   product: {
     inStock: 'In stock',
@@ -124,14 +158,14 @@ const en = {
     notFound: 'We couldn’t find that order.',
     status: { submitted: 'Waiting for confirmation', accepted: 'Confirmed', rejected: 'Not accepted', cancelled: 'Cancelled' },
   },
-  footer: { location: 'Lebanon', whatsapp: 'WhatsApp us' },
+  footer: { location: 'Lebanon', whatsapp: 'WhatsApp us', about: 'Seasonal produce and olive oil from our farm in Lebanon, picked the day before it reaches you.', quickLinks: 'Quick links', categories: 'Shop', reachUs: 'Reach us', rights: 'All rights reserved.' },
 };
 
 type Dictionary = typeof en;
 
 const ar: Dictionary = {
   brand: 'سلّتي الموسمية',
-  nav: { baskets: 'السلال', products: 'منتجات المزرعة', how: 'كيف نعمل', delivery: 'التوصيل', cart: 'السلّة', otherLanguage: 'English' },
+  nav: { home: 'الرئيسية', deliveryTerms: 'التوصيل', story: 'قصّتنا', contact: 'اتصل بنا', baskets: 'السلال الموسمية', offers: 'العروض', search: 'بحث', menu: 'القائمة', closeMenu: 'إغلاق القائمة', allIn: 'كل {name}', products: 'منتجات المزرعة', how: 'كيف نعمل', delivery: 'التوصيل', cart: 'السلّة', otherLanguage: 'English' },
   home: {
     eyebrow: 'طازج من مزرعتنا في لبنان',
     title: 'قطفناه هذا الأسبوع من مزرعتنا، ويصلك إلى باب بيتك في يوم التوصيل.',
@@ -152,6 +186,40 @@ const ar: Dictionary = {
     deliveryTitle: 'مناطق التوصيل',
     deliveryFee: 'التوصيل {fee}',
     deliveryMin: 'الحدّ الأدنى للطلب {min}',
+  },
+  shop: {
+    searchPlaceholder: 'ابحث عن منتج',
+    searchButton: 'بحث',
+    featured: 'اخترناها لك',
+    latest: 'جديد هذا الموسم',
+    showAll: 'عرض الكل',
+    allProducts: 'كل منتجات {name}',
+    resultsFor: '{count} نتيجة لـ«{q}»',
+    noResults: 'لا شيء يطابق «{q}». جرّب كلمة أخرى.',
+    emptyCategory: 'لا يوجد شيء في هذه الفئة حالياً. عد قريباً.',
+    newBadge: 'جديد',
+    lowBadge: 'كمية قليلة',
+    soldBadge: 'نفد',
+    whatsappFloat: 'اطلب عبر واتساب',
+    basketItems: '{count} منتجات من قطاف هذا الأسبوع',
+    basketDay: 'اختر يوم التوصيل عند إتمام الطلب',
+    basketPay: 'الدفع عند الاستلام أو عبر Wish Money أو OMT',
+    allTitle: 'كل المنتجات',
+  },
+  pages: {
+    deliveryTitle: 'التوصيل',
+    deliveryIntro: 'نوصل في أيام محدّدة كي نقطف كل شيء طازجاً في اليوم السابق. اختر منطقتك ويومك عند إتمام الطلب.',
+    deliveryArea: 'المنطقة',
+    deliveryFee: 'الكلفة',
+    deliveryMin: 'الحدّ الأدنى للطلب',
+    deliveryDays: 'أيام التوصيل',
+    noMinimum: 'لا يوجد',
+    deliveryCutoff: 'تُقفل الطلبات قبل ٢٤ ساعة من كل موعد توصيل.',
+    storyTitle: 'قصّتنا',
+    storyBody: '[اكتب قصّة مزرعتك هنا: من أنتم، أين المزرعة، وكيف تزرعون وتقطفون.]',
+    contactTitle: 'اتصل بنا',
+    contactIntro: 'أسرع طريقة للتواصل معنا هي واتساب.',
+    contactWhatsapp: 'راسلنا على واتساب',
   },
   product: {
     inStock: 'متوفّر',
@@ -245,7 +313,7 @@ const ar: Dictionary = {
     notFound: 'لم نجد هذا الطلب.',
     status: { submitted: 'بانتظار التأكيد', accepted: 'تمّ التأكيد', rejected: 'لم يُقبل', cancelled: 'أُلغي' },
   },
-  footer: { location: 'لبنان', whatsapp: 'راسلنا على واتساب' },
+  footer: { location: 'لبنان', whatsapp: 'راسلنا على واتساب', about: 'خضار وفاكهة موسمية وزيت زيتون من مزرعتنا في لبنان، تُقطف في اليوم السابق لوصولها إليك.', quickLinks: 'روابط سريعة', categories: 'تسوّق', reachUs: 'تواصل معنا', rights: 'جميع الحقوق محفوظة.' },
 };
 
 const dictionaries: Record<Locale, Dictionary> = { en, ar };

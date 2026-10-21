@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { useCart } from '@/components/cart-context';
+import { QtyControl } from '@/components/qty-control';
 import { priceCart } from '@/lib/cart';
 import { format, localized, type Dictionary, type Locale } from '@/lib/i18n';
 import { formatUsd } from '@/lib/money';
 import type { Basket, CatalogProduct } from '@/lib/shop-types';
 
 export function CartView({ locale, t, products, baskets }: { locale: Locale; t: Dictionary; products: CatalogProduct[]; baskets: Basket[] }) {
-  const { cart, ready, set, remove } = useCart();
+  const { cart, ready, remove } = useCart();
   const priced = priceCart(cart, products, baskets);
 
   return (
@@ -26,7 +27,6 @@ export function CartView({ locale, t, products, baskets }: { locale: Locale; t: 
               const name = line.nameEn ? localized(locale, line.nameEn, line.nameAr) : t.cart.unavailable;
               const unit = localized(locale, line.unitNameEn, line.unitNameAr);
               const href = `/${locale}/${line.kind === 'basket' ? 'baskets' : 'products'}/${line.slug}`;
-              const max = Math.min(99, line.availableUnits);
               return (
                 <li key={`${line.kind}:${line.id}`} className="cart-line">
                   <div className="cart-line-name">
@@ -38,12 +38,8 @@ export function CartView({ locale, t, products, baskets }: { locale: Locale; t: 
                       </span>
                     )}
                   </div>
-                  {line.slug && (
-                    <div className="stepper" role="group" aria-label={`${t.product.quantity}: ${name}`}>
-                      <button type="button" aria-label={t.product.less} disabled={line.quantity <= 1} onClick={() => set(line.kind, line.id, line.quantity - 1)}>−</button>
-                      <output aria-live="polite">{line.quantity}</output>
-                      <button type="button" aria-label={t.product.more} disabled={line.quantity >= max} onClick={() => set(line.kind, line.id, line.quantity + 1)}>+</button>
-                    </div>
+                  {line.slug && line.availableUnits > 0 && (
+                    <QtyControl kind={line.kind} id={line.id} available={line.availableUnits} name={name} labels={t.product} />
                   )}
                   <span className="cart-line-total">{line.available ? formatUsd(line.lineCents) : '—'}</span>
                   <button type="button" className="link-button" onClick={() => remove(line.kind, line.id)} aria-label={`${t.cart.remove}: ${name}`}>

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { AddWithQuantity } from '@/components/add-to-cart';
-import { Picture } from '@/components/picture';
+import { BasketMark, Picture } from '@/components/picture';
+import { QtyControl } from '@/components/qty-control';
 import { StockLabel } from '@/components/stock-label';
 import { dictionary, isLocale, localized } from '@/lib/i18n';
 import { formatPrice } from '@/lib/money';
@@ -29,13 +29,17 @@ export default async function BasketPage({ params }: { params: Params }) {
 
   return (
     <div className="container">
-      <p className="crumbs"><Link href={`/${locale}#baskets`}>{t.product.back}</Link></p>
+      <div className="page-head">
+        <p className="crumbs"><Link href={`/${locale}`}>{t.nav.home}</Link> / <Link href={`/${locale}#baskets`}>{t.nav.baskets}</Link> / {name}</p>
+      </div>
       <div className="detail">
-        <div className="detail-media"><Picture src={basket.imagePath} alt={name} seed={basket.slug} kind="basket" /></div>
+        <div className="detail-media" style={{ background: 'var(--tile-sand)' }}>
+          {basket.imagePath ? <Picture src={basket.imagePath} alt={name} seed={basket.slug} kind="basket" cover /> : <div className="picture" role="img" aria-label={name}><BasketMark width="46%" /></div>}
+        </div>
         <div className="detail-info">
           <h1>{name}</h1>
           <p className="detail-price">{formatPrice(basket.priceUsd)} <span>{t.product.perBasket}</span></p>
-          {description && <p className="soft" style={{ fontSize: 17, lineHeight: 1.6, whiteSpace: 'pre-line' }}>{description}</p>}
+          {description && <p className="soft" style={{ fontSize: 16, lineHeight: 1.7, whiteSpace: 'pre-line' }}>{description}</p>}
           <section className="panel" aria-labelledby="inside">
             <h2 id="inside">{t.product.inside}</h2>
             <p className="small muted">{t.product.insideNote}</p>
@@ -49,7 +53,12 @@ export default async function BasketPage({ params }: { params: Params }) {
             </ul>
           </section>
           <StockLabel available={basket.availableUnits} t={t} />
-          <AddWithQuantity kind="basket" id={basket.id} available={basket.availableUnits} labels={t.product} />
+          {basket.availableUnits > 0 && (
+            <div className="buy-row">
+              <QtyControl kind="basket" id={basket.id} available={basket.availableUnits} name={name} labels={t.product} large />
+              <Link href={`/${locale}/cart`} className="btn btn-primary btn-large">{t.cart.checkout}</Link>
+            </div>
+          )}
         </div>
       </div>
     </div>
