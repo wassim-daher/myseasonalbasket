@@ -1,0 +1,17 @@
+[build]
+command = "pnpm build"
+publish = ".next"
+
+[build.environment]
+NODE_VERSION = "24"
+
+# Select the FREE plan in the owner's account. No paid add-ons.
+# Builds never change the database: the store only reads the catalog and places
+# web orders at run time, as the restricted shop_runtime role.
+# Configure SHOP_DATABASE_URL, SHOP_DATABASE_CA_CERT and SHOP_FARM_ID in Netlify;
+# PR previews must point at a test database, never the farm's live one.
+[context.deploy-preview]
+command = "pnpm build"
+
+[[plugins]]
+package = "@netlify/plugin-nextjs"

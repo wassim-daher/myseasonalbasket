@@ -1,0 +1,276 @@
+// The two languages of the store. Every page lives under /en or /ar.
+export const locales = ['en', 'ar'] as const;
+export type Locale = (typeof locales)[number];
+
+export function isLocale(value: string): value is Locale {
+  return (locales as readonly string[]).includes(value);
+}
+
+export const direction = (locale: Locale) => (locale === 'ar' ? 'rtl' : 'ltr');
+
+const en = {
+  brand: 'My Seasonal Basket',
+  nav: { baskets: 'Baskets', products: 'Farm products', how: 'How it works', delivery: 'Delivery', cart: 'Cart', otherLanguage: 'عربي' },
+  home: {
+    eyebrow: 'Fresh from our farm in Lebanon',
+    title: 'Picked this week on our farm, at your door on your delivery day.',
+    lead: 'Seasonal baskets and our own olive oil, packed the day before delivery.',
+    ctaBaskets: 'Choose a basket',
+    ctaProducts: 'Shop farm products',
+    payNote: 'Cash on delivery, Wish Money, OMT or order on WhatsApp.',
+    basketsTitle: "This season's baskets",
+    basketsLead: 'The contents change with the harvest. The price doesn’t.',
+    productsTitle: 'From the farm',
+    productsLead: 'Live stock from our store room. When it’s gone, it’s gone until next harvest.',
+    nothingYet: 'Nothing is on sale right now. Check back soon.',
+    how: [
+      { title: 'Choose your day', text: 'Pick a basket or products, your area and a delivery window.' },
+      { title: 'We pick and pack', text: 'We confirm your order, then harvest and pack it on the farm.' },
+      { title: 'Delivered, pay your way', text: 'Cash on delivery, Wish Money or OMT. Prefer to chat? Order on WhatsApp.' },
+    ],
+    deliveryTitle: 'Where we deliver',
+    deliveryFee: 'Delivery {fee}',
+    deliveryMin: 'minimum order {min}',
+  },
+  product: {
+    inStock: 'In stock',
+    fewLeft: 'Only {count} left',
+    soldOut: 'Sold out until next harvest',
+    soldOutShort: 'Sold out',
+    add: 'Add to cart',
+    added: 'Added',
+    perBasket: 'per basket',
+    inside: "In this season's basket",
+    insideNote: 'May change slightly with the harvest.',
+    back: 'Back to the shop',
+    quantity: 'Quantity',
+    less: 'One less',
+    more: 'One more',
+  },
+  cart: {
+    title: 'Your cart',
+    empty: 'Your cart is empty.',
+    keepShopping: 'Keep shopping',
+    remove: 'Remove',
+    subtotal: 'Subtotal',
+    checkout: 'Checkout',
+    deliveryLater: 'Delivery fee is shown at checkout.',
+    unavailable: 'No longer available',
+  },
+  checkout: {
+    title: 'Checkout',
+    details: 'Your details',
+    name: 'Full name',
+    phone: 'Mobile',
+    email: 'Email (optional)',
+    delivery: 'Delivery',
+    zone: 'Area',
+    chooseZone: 'Choose your area',
+    address: 'Address',
+    addressHint: 'Street, building, floor',
+    addressNotes: 'Directions for the driver (optional)',
+    day: 'Delivery day',
+    noDays: 'No delivery days are open for this area right now.',
+    spotsLeft: '{count} spots left',
+    payment: 'Payment',
+    notes: 'Notes (optional)',
+    summary: 'Your order',
+    deliveryFee: 'Delivery',
+    total: 'Total',
+    place: 'Place order',
+    placeWhatsapp: 'Place order and open WhatsApp',
+    placing: 'Placing your order…',
+    confirmNote: 'We’ll confirm your order by phone or WhatsApp. Nothing is charged online.',
+    minOrder: 'The minimum order for this area is {min}.',
+    closed: 'We are not taking orders right now.',
+  },
+  methods: {
+    cod: { label: 'Cash on delivery', note: 'Pay the driver when your order arrives' },
+    wish: { label: 'Wish Money', note: 'Our account details come with your confirmation' },
+    omt: { label: 'OMT', note: 'Our account details come with your confirmation' },
+    whatsapp: { label: 'Order on WhatsApp', note: 'Opens WhatsApp with your order filled in' },
+    card: { label: 'Card', note: 'Pay securely online' },
+  },
+  errors: {
+    SHOP_CLOSED: 'We are not taking orders right now.',
+    SHOP_PAYMENT: 'Please choose a payment method.',
+    SHOP_ZONE: 'Please choose your area.',
+    SHOP_SLOT: 'That delivery day is no longer available. Please choose another.',
+    SHOP_SLOT_FULL: 'That delivery window just filled up. Please choose another.',
+    SHOP_PRODUCT: 'Something in your cart is no longer on sale. Please review your cart.',
+    SHOP_STOCK: 'We don’t have enough of something in your cart any more. Please lower the quantity.',
+    SHOP_MIN_ORDER: 'Your order is below the minimum for this area.',
+    SHOP_INPUT: 'Please check your details and try again.',
+    SHOP_CUSTOMER: 'Please sign in again.',
+    name: 'Please enter your name.',
+    phone: 'Please enter a mobile number, e.g. +961 70 123 456.',
+    address: 'Please enter your address.',
+    email: 'Please enter a valid email or leave it empty.',
+    cart: 'Your cart is empty.',
+    unknown: 'Something went wrong. Please try again, or order on WhatsApp.',
+  },
+  order: {
+    thanks: 'Thank you, {name}!',
+    received: 'We received your order {reference}.',
+    next: 'We’ll confirm it by phone or WhatsApp before we pick and pack.',
+    delivery: 'Delivery',
+    payment: 'Payment',
+    payWish: 'Send {total} by Wish Money to: {account}',
+    payOmt: 'Send {total} by OMT to: {account}',
+    payCod: 'Pay {total} in cash when your order arrives.',
+    whatsappCta: 'Send my order on WhatsApp',
+    whatsappIntro: 'Hello! I just placed order {reference} on My Seasonal Basket:',
+    backHome: 'Back to the shop',
+    notFound: 'We couldn’t find that order.',
+    status: { submitted: 'Waiting for confirmation', accepted: 'Confirmed', rejected: 'Not accepted', cancelled: 'Cancelled' },
+  },
+  footer: { location: 'Lebanon', whatsapp: 'WhatsApp us' },
+};
+
+type Dictionary = typeof en;
+
+const ar: Dictionary = {
+  brand: 'سلّتي الموسمية',
+  nav: { baskets: 'السلال', products: 'منتجات المزرعة', how: 'كيف نعمل', delivery: 'التوصيل', cart: 'السلّة', otherLanguage: 'English' },
+  home: {
+    eyebrow: 'طازج من مزرعتنا في لبنان',
+    title: 'قطفناه هذا الأسبوع من مزرعتنا، ويصلك إلى باب بيتك في يوم التوصيل.',
+    lead: 'سلال موسمية وزيت زيتون من إنتاجنا، تُحضَّر قبل يوم التوصيل.',
+    ctaBaskets: 'اختر سلّتك',
+    ctaProducts: 'تسوّق منتجات المزرعة',
+    payNote: 'الدفع عند الاستلام، أو عبر Wish Money أو OMT، أو اطلب عبر واتساب.',
+    basketsTitle: 'سلال هذا الموسم',
+    basketsLead: 'المحتوى يتغيّر مع القطاف، والسعر ثابت.',
+    productsTitle: 'من المزرعة',
+    productsLead: 'الكميات المتوفّرة الآن في مخزننا. عندما تنفد، ننتظر القطاف القادم.',
+    nothingYet: 'لا يوجد شيء معروض للبيع حالياً. عد قريباً.',
+    how: [
+      { title: 'اختر يومك', text: 'اختر سلّة أو منتجات، ومنطقتك، وموعد التوصيل.' },
+      { title: 'نقطف ونحضّر', text: 'نؤكّد طلبك، ثم نقطفه ونحضّره في المزرعة.' },
+      { title: 'يصلك وتدفع كما تريد', text: 'الدفع عند الاستلام أو عبر Wish Money أو OMT، أو اطلب عبر واتساب.' },
+    ],
+    deliveryTitle: 'مناطق التوصيل',
+    deliveryFee: 'التوصيل {fee}',
+    deliveryMin: 'الحدّ الأدنى للطلب {min}',
+  },
+  product: {
+    inStock: 'متوفّر',
+    fewLeft: 'بقي {count} فقط',
+    soldOut: 'نفد حتى القطاف القادم',
+    soldOutShort: 'نفد',
+    add: 'أضف إلى السلّة',
+    added: 'تمّت الإضافة',
+    perBasket: 'للسلّة',
+    inside: 'في سلّة هذا الموسم',
+    insideNote: 'قد يتغيّر قليلاً حسب القطاف.',
+    back: 'العودة إلى المتجر',
+    quantity: 'الكمية',
+    less: 'أقلّ بواحد',
+    more: 'أكثر بواحد',
+  },
+  cart: {
+    title: 'سلّة المشتريات',
+    empty: 'سلّتك فارغة.',
+    keepShopping: 'تابع التسوّق',
+    remove: 'إزالة',
+    subtotal: 'المجموع',
+    checkout: 'إتمام الطلب',
+    deliveryLater: 'تظهر كلفة التوصيل عند إتمام الطلب.',
+    unavailable: 'لم يعد متوفّراً',
+  },
+  checkout: {
+    title: 'إتمام الطلب',
+    details: 'معلوماتك',
+    name: 'الاسم الكامل',
+    phone: 'رقم الهاتف',
+    email: 'البريد الإلكتروني (اختياري)',
+    delivery: 'التوصيل',
+    zone: 'المنطقة',
+    chooseZone: 'اختر منطقتك',
+    address: 'العنوان',
+    addressHint: 'الشارع، المبنى، الطابق',
+    addressNotes: 'إرشادات للسائق (اختياري)',
+    day: 'يوم التوصيل',
+    noDays: 'لا توجد أيام توصيل متاحة لهذه المنطقة حالياً.',
+    spotsLeft: 'بقي {count} أماكن',
+    payment: 'الدفع',
+    notes: 'ملاحظات (اختياري)',
+    summary: 'طلبك',
+    deliveryFee: 'التوصيل',
+    total: 'المجموع الكلي',
+    place: 'أرسل الطلب',
+    placeWhatsapp: 'أرسل الطلب وافتح واتساب',
+    placing: 'جارٍ إرسال طلبك…',
+    confirmNote: 'سنؤكّد طلبك عبر الهاتف أو واتساب. لا يتمّ أي دفع عبر الإنترنت.',
+    minOrder: 'الحدّ الأدنى للطلب في هذه المنطقة هو {min}.',
+    closed: 'لا نستقبل طلبات حالياً.',
+  },
+  methods: {
+    cod: { label: 'الدفع عند الاستلام', note: 'ادفع للسائق عند وصول طلبك' },
+    wish: { label: 'Wish Money', note: 'نرسل لك تفاصيل الحساب مع تأكيد الطلب' },
+    omt: { label: 'OMT', note: 'نرسل لك تفاصيل الحساب مع تأكيد الطلب' },
+    whatsapp: { label: 'الطلب عبر واتساب', note: 'يفتح واتساب مع تفاصيل طلبك' },
+    card: { label: 'بطاقة', note: 'ادفع بأمان عبر الإنترنت' },
+  },
+  errors: {
+    SHOP_CLOSED: 'لا نستقبل طلبات حالياً.',
+    SHOP_PAYMENT: 'يرجى اختيار طريقة الدفع.',
+    SHOP_ZONE: 'يرجى اختيار منطقتك.',
+    SHOP_SLOT: 'يوم التوصيل هذا لم يعد متاحاً. يرجى اختيار يوم آخر.',
+    SHOP_SLOT_FULL: 'امتلأ موعد التوصيل هذا للتو. يرجى اختيار موعد آخر.',
+    SHOP_PRODUCT: 'أحد المنتجات في سلّتك لم يعد معروضاً. يرجى مراجعة السلّة.',
+    SHOP_STOCK: 'لم تعد الكمية كافية لأحد المنتجات في سلّتك. يرجى تخفيض الكمية.',
+    SHOP_MIN_ORDER: 'طلبك أقلّ من الحدّ الأدنى لهذه المنطقة.',
+    SHOP_INPUT: 'يرجى التحقّق من معلوماتك والمحاولة مجدداً.',
+    SHOP_CUSTOMER: 'يرجى تسجيل الدخول مجدداً.',
+    name: 'يرجى إدخال اسمك.',
+    phone: 'يرجى إدخال رقم هاتف، مثلاً ‎+961 70 123 456.',
+    address: 'يرجى إدخال عنوانك.',
+    email: 'يرجى إدخال بريد إلكتروني صحيح أو تركه فارغاً.',
+    cart: 'سلّتك فارغة.',
+    unknown: 'حدث خطأ. يرجى المحاولة مجدداً أو الطلب عبر واتساب.',
+  },
+  order: {
+    thanks: 'شكراً لك يا {name}!',
+    received: 'استلمنا طلبك رقم {reference}.',
+    next: 'سنؤكّده عبر الهاتف أو واتساب قبل القطاف والتحضير.',
+    delivery: 'التوصيل',
+    payment: 'الدفع',
+    payWish: 'أرسل {total} عبر Wish Money إلى: {account}',
+    payOmt: 'أرسل {total} عبر OMT إلى: {account}',
+    payCod: 'ادفع {total} نقداً عند وصول طلبك.',
+    whatsappCta: 'أرسل طلبي عبر واتساب',
+    whatsappIntro: 'مرحباً! أرسلت للتوّ الطلب {reference} على سلّتي الموسمية:',
+    backHome: 'العودة إلى المتجر',
+    notFound: 'لم نجد هذا الطلب.',
+    status: { submitted: 'بانتظار التأكيد', accepted: 'تمّ التأكيد', rejected: 'لم يُقبل', cancelled: 'أُلغي' },
+  },
+  footer: { location: 'لبنان', whatsapp: 'راسلنا على واتساب' },
+};
+
+const dictionaries: Record<Locale, Dictionary> = { en, ar };
+export type { Dictionary };
+export const dictionary = (locale: Locale) => dictionaries[locale];
+
+/** Fills {placeholders} in a message. */
+export function format(message: string, values: Record<string, string | number>) {
+  return message.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+}
+
+/** Picks the Arabic text when there is one, else the English. */
+export function localized(locale: Locale, en: string, ar: string | null | undefined) {
+  return locale === 'ar' && ar && ar.trim() ? ar : en;
+}
+
+const weekdays: Record<Locale, string[]> = {
+  en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+  ar: ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
+};
+
+/** "Thursday 24 Oct" / "الخميس 24 تشرين الأول" from an ISO date (YYYY-MM-DD). */
+export function formatDay(locale: Locale, isoDate: string) {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  const month = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-LB-u-nu-latn' : 'en-GB', { month: 'short', timeZone: 'UTC' }).format(date);
+  return `${weekdays[locale][date.getUTCDay()]} ${d} ${month}`;
+}
