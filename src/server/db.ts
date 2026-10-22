@@ -1,14 +1,11 @@
 import 'server-only';
 import pg from 'pg';
+import { normalizePem } from '@/lib/pem';
 
 // One small pool per server instance, as the restricted shop_runtime role.
 // That role can only read the shop tables and call the shop_* functions.
 
 const globalPool = globalThis as unknown as { shopPool?: pg.Pool };
-
-function normalizePem(value: string) {
-  return value.replace(/\\n/g, '\n').trim();
-}
 
 export function pool(): pg.Pool {
   const connectionString = process.env.SHOP_DATABASE_URL;
