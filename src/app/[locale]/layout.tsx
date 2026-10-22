@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: { default: t.brand, template: `%s · ${t.brand}` },
     description: t.home.lead,
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || process.env.DEPLOY_PRIME_URL || process.env.URL || 'http://localhost:3000'),
     alternates: { languages: { en: '/en', ar: '/ar' } },
     icons: { icon: '/icon.svg' },
   };
