@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { format, formatDay, isLocale, dictionary, type Dictionary, type Locale } from '@/lib/i18n';
 import { formatPrice } from '@/lib/money';
+import { displayStatus, isPaid } from '@/lib/order-progress';
 import type { AccountOrder } from '@/lib/shop-types';
 import { accountOrders, currentCustomer, defaultAddress } from '@/server/account';
 import { getZones } from '@/server/shop';
@@ -64,18 +65,19 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
 
 function OrderRow({ order, locale, t }: { order: AccountOrder; locale: Locale; t: Dictionary }) {
   const a = t.account;
-  const closed = order.status === 'rejected' || order.status === 'cancelled';
+  const status = displayStatus(order);
+  const closed = status === 'rejected' || status === 'cancelled';
   return (
     <li className="order-row">
       <div className="order-row-head">
         <strong dir="ltr">{order.reference}</strong>
-        <span className={`status-pill${closed ? ' status-closed' : ''}`}>{t.order.status[order.status]}</span>
-        {order.paymentStatus === 'paid' && <span className="status-pill">{t.order.paid}</span>}
+        <span className={`status-pill${closed ? ' status-closed' : ''}`}>{t.order.status[status]}</span>
+        {isPaid(order) && !closed && <span className="status-pill">{t.order.paid}</span>}
       </div>
       <p className="small muted">
         {format(a.placedOn, { date: formatDay(locale, order.placedAt.slice(0, 10)) })} · {order.itemCount === 1 ? a.oneItem : format(a.items, { count: order.itemCount })} · {formatPrice(order.totalUsd)}
       </p>
-      {!closed && (
+      {!closed && status !== 'delivered' && (
         <p className="small">{format(a.deliveryOn, { date: formatDay(locale, order.deliveryDate), time: `⁦${order.startTime}–${order.endTime}⁩` })}</p>
       )}
       <Link href={`/${locale}/order/${order.id}`} className="btn btn-secondary order-row-open">{a.open}</Link>

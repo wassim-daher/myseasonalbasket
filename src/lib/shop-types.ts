@@ -92,6 +92,8 @@ export type OrderSummary = {
   addressLine: string;
   paymentMethod: PaymentMethod;
   paymentStatus: 'pending' | 'paid';
+  /** How the farm is getting on with it once accepted (from Farm Agent's sales order). */
+  tracking: OrderTracking;
   /** The account the order belongs to, or null for a guest order. */
   shopCustomerId: string | null;
   /** When the order was placed (ISO timestamp). */
@@ -102,8 +104,20 @@ export type OrderSummary = {
   lines: { kind: 'product' | 'basket'; name: string; unitName: string; quantity: number; lineTotalUsd: string }[];
 };
 
+/** Farm Agent's progress on an accepted order: packed, delivered, paid. */
+export type OrderTracking = {
+  /** Latest sales order status, e.g. reserved, confirmed, prepared, partially_delivered, delivered, completed, cancelled. */
+  salesStatus: string | null;
+  /** Last delivery date (YYYY-MM-DD), once something was delivered. */
+  deliveredOn: string | null;
+  /** Every delivery so far is fully paid. */
+  paidInFull: boolean;
+};
+
+export const noTracking: OrderTracking = { salesStatus: null, deliveredOn: null, paidInFull: false };
+
 /** One order in the shopper's account. */
-export type AccountOrder = Pick<OrderSummary, 'id' | 'reference' | 'status' | 'paymentStatus' | 'paymentMethod' | 'deliveryDate' | 'startTime' | 'endTime' | 'totalUsd' | 'placedAt'> & {
+export type AccountOrder = Pick<OrderSummary, 'id' | 'reference' | 'status' | 'paymentStatus' | 'paymentMethod' | 'deliveryDate' | 'startTime' | 'endTime' | 'totalUsd' | 'placedAt' | 'tracking'> & {
   itemCount: number;
 };
 

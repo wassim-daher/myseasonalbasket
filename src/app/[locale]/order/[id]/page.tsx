@@ -4,6 +4,7 @@ import { dictionary, format, formatDay, isLocale, localized } from '@/lib/i18n';
 import { formatPrice } from '@/lib/money';
 import { orderMessage, whatsappLink } from '@/lib/whatsapp';
 import { OrderProgress } from '@/components/order-progress';
+import { displayStatus, isPaid } from '@/lib/order-progress';
 import { RememberOrder } from '@/components/remember-order';
 import { CancelOrder } from '@/components/cancel-order';
 import { currentCustomer } from '@/server/account';
@@ -25,6 +26,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   if (!order) notFound();
 
   const total = formatPrice(order.totalUsd);
+  const status = displayStatus(order);
   const wa = settings.whatsappPhone ? whatsappLink(settings.whatsappPhone, orderMessage(locale, order)) : null;
   const paymentLine =
     order.paymentMethod === 'wish' && settings.wishAccount ? format(t.order.payWish, { total, account: settings.wishAccount })
@@ -41,7 +43,10 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         </span>
         <h1>{format(t.order.thanks, { name: order.contactName.split(' ')[0] })}</h1>
         <p style={{ fontSize: 18 }}>{format(t.order.received, { reference: order.reference })}</p>
-        <span className={`status-pill${order.status === 'rejected' || order.status === 'cancelled' ? ' status-closed' : ''}`}>{t.order.status[order.status]}</span>
+        <div className="order-row-head">
+          <span className={`status-pill${status === 'rejected' || status === 'cancelled' ? ' status-closed' : ''}`}>{t.order.status[status]}</span>
+          {isPaid(order) && status !== 'rejected' && status !== 'cancelled' && <span className="status-pill">{t.order.paid}</span>}
+        </div>
         {order.status === 'submitted' && <p className="soft">{t.order.next}</p>}
 
         <OrderProgress order={order} locale={locale} t={t} />

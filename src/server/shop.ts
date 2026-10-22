@@ -2,8 +2,9 @@ import 'server-only';
 import { farmId, pool } from './db';
 import type { CheckoutCommand } from '@/lib/checkout';
 import type {
-  Banner, Basket, CatalogProduct, Category, DeliveryOption, MenuCategory, DeliveryZone, OrderSummary, PaymentMethod, PlacedOrder, ShopSettings,
+  Banner, Basket, CatalogProduct, Category, DeliveryOption, MenuCategory, DeliveryZone, OrderSummary, OrderTracking, PaymentMethod, PlacedOrder, ShopSettings,
 } from '@/lib/shop-types';
+import { noTracking } from '@/lib/shop-types';
 
 // Everything the store reads or writes goes through these functions. Prices,
 // stock and order checks live in the database (Farm Agent's shop_* functions).
@@ -123,6 +124,26 @@ export async function getOrder(orderId: string): Promise<OrderSummary | null> {
     [orderId, farmId()],
   );
   if (!rows[0]) return null;
-  return { ...rows[0], paymentMethod: rows[0].paymentMethod as PaymentMethod };
+  const tracking = (await orderTracking([orderId])).get(orderId) ?? noTracking;
+  return { ...rows[0], paymentMethod: rows[0].paymentMethod as PaymentMethod, tracking };
+}
+
+/**
+ * Farm Agent's progress on accepted orders (packed, delivered, paid), by order id.
+ * Shows nothing extra rather than failing if the database doesn't offer it yet.
+ */
+export async function orderTracking(orderIds: string[]): Promise<Map<string, OrderTracking>> {
+  const result = new Map<string, OrderTracking>();
+  if (orderIds.length === 0) return result;
+  try {
+    const { rows } = await pool().query<{ orderId: string; salesStatus: string | null; deliveredOn: string | null; paidInFull: boolean }>(
+      `SELECT "orderId"::text, "salesStatus", to_char("deliveredOn",'YYYY-MM-DD') AS "deliveredOn", "paidInFull" FROM shop_order_tracking($1,$2::uuid[])`,
+      [farmId(), orderIds.slice(0, 100)],
+    );
+    for (const r of rows) result.set(r.orderId, { salesStatus: r.salesStatus, deliveredOn: r.deliveredOn, paidInFull: r.paidInFull });
+  } catch (error) {
+    console.error('order tracking unavailable', error);
+  }
+  return result;
 }
 

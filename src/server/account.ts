@@ -3,8 +3,9 @@ import { cookies } from 'next/headers';
 import { cache } from 'react';
 import { farmId, pool } from './db';
 import { hashPassword, hashToken, newSessionToken, verifyPassword } from './passwords';
+import { orderTracking } from './shop';
 import { phoneKey, sessionDays } from '@/lib/account';
-import type { AccountAddress, AccountOrder, Customer } from '@/lib/shop-types';
+import { noTracking, type AccountAddress, type AccountOrder, type Customer } from '@/lib/shop-types';
 
 // Signed-in shoppers. The browser holds a random token in an http-only cookie; the
 // database keeps only its SHA-256 (ShopSession) and is reached through the shop_*
@@ -117,7 +118,8 @@ export async function accountOrders(customerId: string): Promise<AccountOrder[]>
       ORDER BY o."createdAt" DESC LIMIT 100`,
     [farmId(), customerId],
   );
-  return rows as AccountOrder[];
+  const tracking = await orderTracking(rows.map((r) => r.id));
+  return rows.map((r) => ({ ...r, tracking: tracking.get(r.id) ?? noTracking })) as AccountOrder[];
 }
 
 export async function defaultAddress(customerId: string): Promise<AccountAddress | null> {
