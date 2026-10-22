@@ -92,6 +92,8 @@ export type OrderSummary = {
   addressLine: string;
   paymentMethod: PaymentMethod;
   paymentStatus: 'pending' | 'paid';
+  /** The account the order belongs to, or null for a guest order. */
+  shopCustomerId: string | null;
   /** When the order was placed (ISO timestamp). */
   placedAt: string;
   subtotalUsd: string;
@@ -100,7 +102,13 @@ export type OrderSummary = {
   lines: { kind: 'product' | 'basket'; name: string; unitName: string; quantity: number; lineTotalUsd: string }[];
 };
 
-/** One row of "My orders". */
-export type MyOrder = Pick<OrderSummary, 'id' | 'reference' | 'status' | 'paymentStatus' | 'paymentMethod' | 'deliveryDate' | 'startTime' | 'endTime' | 'totalUsd' | 'placedAt'> & {
+/** One order in the shopper's account. */
+export type AccountOrder = Pick<OrderSummary, 'id' | 'reference' | 'status' | 'paymentStatus' | 'paymentMethod' | 'deliveryDate' | 'startTime' | 'endTime' | 'totalUsd' | 'placedAt'> & {
   itemCount: number;
 };
+
+/** A signed-in shopper. */
+export type Customer = { id: string; name: string; phone: string; language: string };
+
+/** The shopper's saved delivery address. */
+export type AccountAddress = { zoneId: string; line: string; notes: string };

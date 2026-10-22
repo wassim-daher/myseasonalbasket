@@ -1,20 +1,7 @@
-import { notFound } from 'next/navigation';
-import { dictionary, isLocale } from '@/lib/i18n';
-import { MyOrdersView } from './my-orders-view';
+import { redirect } from 'next/navigation';
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+// Orders now live in the shopper's account.
+export default async function OldMyOrders({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  return isLocale(locale) ? { title: dictionary(locale).orders.title, robots: { index: false } } : {};
-}
-
-export default async function MyOrdersPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  if (!isLocale(locale)) notFound();
-  const t = dictionary(locale);
-  return (
-    <div className="container">
-      <h1 className="page-title">{t.orders.title}</h1>
-      <MyOrdersView locale={locale} t={t} />
-    </div>
-  );
+  redirect(`/${locale === 'ar' ? 'ar' : 'en'}/account`);
 }

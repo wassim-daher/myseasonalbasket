@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useCart } from './cart-context';
-import { CartIcon, CloseIcon, MenuIcon, SearchIcon } from './icons';
+import { CartIcon, CloseIcon, MenuIcon, SearchIcon, UserIcon } from './icons';
 import { format, localized, type Dictionary, type Locale } from '@/lib/i18n';
 import type { MenuCategory } from '@/lib/shop-types';
 
@@ -19,13 +19,13 @@ export function LogoMark({ size = 30 }: { size?: number }) {
   );
 }
 
-type Props = { locale: Locale; t: Dictionary; menu: MenuCategory[]; hasBaskets: boolean };
+type Props = { locale: Locale; t: Dictionary; menu: MenuCategory[]; hasBaskets: boolean; customerName: string | null };
 
 /**
  * One header row: the ☰ button, the logo in the middle, search and cart. The whole
  * menu (categories, info pages, language) lives in the drawer the ☰ button opens.
  */
-export function SiteHeader({ locale, t, menu, hasBaskets }: Props) {
+export function SiteHeader({ locale, t, menu, hasBaskets, customerName }: Props) {
   const pathname = usePathname() ?? `/${locale}`;
   const { count, ready } = useCart();
   const [drawer, setDrawer] = useState(false);
@@ -67,6 +67,10 @@ export function SiteHeader({ locale, t, menu, hasBaskets }: Props) {
         </Link>
         <div className="header-end">
           <Link href={`/${locale}/search`} className="icon-button" aria-label={t.nav.search}><SearchIcon /></Link>
+          <Link href={`/${locale}/account${customerName ? '' : '/login'}`} className="icon-button" aria-label={customerName ? t.nav.account : t.nav.login}>
+            <UserIcon />
+            {customerName && <span className="icon-dot" aria-hidden="true" />}
+          </Link>
           <Link href={`/${locale}/cart`} className="icon-button" aria-label={cartLabel}>
             <CartIcon />
             {ready && count > 0 && <span className="icon-badge" aria-hidden="true">{count}</span>}
@@ -82,6 +86,10 @@ export function SiteHeader({ locale, t, menu, hasBaskets }: Props) {
               <strong>{t.nav.menu}</strong>
               <button type="button" className="icon-button" aria-label={t.nav.closeMenu} onClick={close} autoFocus><CloseIcon /></button>
             </div>
+            <Link href={`/${locale}/account${customerName ? '' : '/login'}`} className="drawer-account">
+              <UserIcon size={22} />
+              <span>{customerName ? `${t.nav.account} · ${customerName.split(' ')[0]}` : t.nav.login}</span>
+            </Link>
             <form className="drawer-search" action={`/${locale}/search`} method="get" role="search">
               <label htmlFor="menu-q" className="visually-hidden">{t.shop.searchPlaceholder}</label>
               <input id="menu-q" name="q" type="search" placeholder={t.shop.searchPlaceholder} maxLength={80} />
@@ -111,7 +119,7 @@ export function SiteHeader({ locale, t, menu, hasBaskets }: Props) {
               </ul>
             </nav>
             <div className="drawer-links">
-              <Link href={`/${locale}/orders`} className="drawer-orders">{t.nav.myOrders}</Link>
+              <Link href={`/${locale}/account`} className="drawer-orders">{t.nav.myOrders}</Link>
               <Link href={`/${locale}`}>{t.nav.home}</Link>
               <Link href={`/${locale}/products`}>{t.shop.allTitle}</Link>
               <Link href={`/${locale}/delivery`}>{t.nav.deliveryTerms}</Link>

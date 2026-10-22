@@ -8,7 +8,8 @@ import { useCart } from '@/components/cart-context';
 import { priceCart } from '@/lib/cart';
 import { format, formatDay, localized, type Dictionary, type Locale } from '@/lib/i18n';
 import { formatUsd, toCents } from '@/lib/money';
-import type { Basket, CatalogProduct, DeliveryOption, DeliveryZone, PaymentMethod } from '@/lib/shop-types';
+import type { AccountAddress, Basket, CatalogProduct, DeliveryOption, DeliveryZone, PaymentMethod } from '@/lib/shop-types';
+import { logoutAction } from '../account/actions';
 
 const DETAILS_KEY = 'msb-details-v1';
 
@@ -41,9 +42,11 @@ type Props = {
   zones: DeliveryZone[];
   ordersOpen: boolean;
   paymentMethods: PaymentMethod[];
+  /** The signed-in shopper, whose details and saved address are filled in. */
+  account: { name: string; phone: string; address: AccountAddress | null } | null;
 };
 
-export function CheckoutForm({ locale, t, products, baskets, zones, ordersOpen, paymentMethods }: Props) {
+export function CheckoutForm({ locale, t, products, baskets, zones, ordersOpen, paymentMethods, account }: Props) {
   const router = useRouter();
   const { cart, ready, clear } = useCart();
   const priced = priceCart(cart, products, baskets);
@@ -58,10 +61,21 @@ export function CheckoutForm({ locale, t, products, baskets, zones, ordersOpen, 
   const [requestKey] = useState(() => crypto.randomUUID());
 
   useEffect(() => {
-    // Fill in the details this shopper used last time (kept only in their browser).
+    // Fill in the details this shopper used last time: from their account when signed
+    // in, otherwise from this browser.
+    const saved = loadDetails();
+    const fromAccount: Partial<Details> = account
+      ? {
+          contactName: account.name,
+          phone: account.phone,
+          ...(account.address && zones.some((z) => z.id === account.address?.zoneId)
+            ? { zoneId: account.address.zoneId, addressLine: account.address.line, addressNotes: account.address.notes }
+            : {}),
+        }
+      : {};
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDetails((current) => ({ ...current, ...loadDetails() }));
-  }, []);
+    setDetails((current) => ({ ...current, ...saved, ...fromAccount }));
+  }, [account, zones]);
 
   const zone = zones.find((z) => z.id === details.zoneId);
 
@@ -147,6 +161,17 @@ export function CheckoutForm({ locale, t, products, baskets, zones, ordersOpen, 
     <div className="container">
       <h1 className="page-title">{t.checkout.title}</h1>
       {!ordersOpen && <p className="alert" role="status" style={{ marginBottom: 20 }}>{t.checkout.closed}</p>}
+      {account ? (
+        <form action={logoutAction.bind(null, locale)} className="account-note">
+          <span>{format(t.account.orderingAs, { name: account.name })}</span>
+          <button type="submit" className="link-button">{t.account.notYou}</button>
+        </form>
+      ) : (
+        <p className="account-note">
+          {t.account.checkoutLogin}{' '}
+          <Link href={`/${locale}/account/login?next=${encodeURIComponent(`/${locale}/checkout`)}`}>{t.account.checkoutLoginLink}</Link>
+        </p>
+      )}
       <div className="cart-layout">
         <form className="form" onSubmit={submit} noValidate>
           <fieldset className="form-section">

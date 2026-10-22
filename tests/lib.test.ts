@@ -59,7 +59,7 @@ describe('whatsapp', () => {
   const order: OrderSummary = {
     id: uuid, reference: 'WEB-2026-0001', status: 'submitted', contactName: 'Rana', phone: '+96170123456', language: 'en',
     zoneNameEn: 'Jounieh', zoneNameAr: 'جونية', deliveryDate: '2026-10-24', startTime: '10:00', endTime: '13:00',
-    addressLine: 'Main road', paymentMethod: 'whatsapp', paymentStatus: 'pending', placedAt: '2026-10-22T08:00:00Z', subtotalUsd: '25.00', deliveryFeeUsd: '3.00', totalUsd: '28.00',
+    addressLine: 'Main road', paymentMethod: 'whatsapp', paymentStatus: 'pending', shopCustomerId: null, placedAt: '2026-10-22T08:00:00Z', subtotalUsd: '25.00', deliveryFeeUsd: '3.00', totalUsd: '28.00',
     lines: [{ kind: 'product', name: 'Olive oil', unitName: '1 L bottle', quantity: 2, lineTotalUsd: '25.00' }],
   };
   it('builds a wa.me link with the order', () => {

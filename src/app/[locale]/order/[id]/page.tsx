@@ -5,6 +5,8 @@ import { formatPrice } from '@/lib/money';
 import { orderMessage, whatsappLink } from '@/lib/whatsapp';
 import { OrderProgress } from '@/components/order-progress';
 import { RememberOrder } from '@/components/remember-order';
+import { CancelOrder } from '@/components/cancel-order';
+import { currentCustomer } from '@/server/account';
 import { getOrder, getSettings } from '@/server/shop';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +21,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   const { locale, id } = await params;
   if (!isLocale(locale)) notFound();
   const t = dictionary(locale);
-  const [order, settings] = await Promise.all([getOrder(id), getSettings()]);
+  const [order, settings, customer] = await Promise.all([getOrder(id), getSettings(), currentCustomer()]);
   if (!order) notFound();
 
   const total = formatPrice(order.totalUsd);
@@ -43,6 +45,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         {order.status === 'submitted' && <p className="soft">{t.order.next}</p>}
 
         <OrderProgress order={order} locale={locale} t={t} />
+        {order.status === 'submitted' && customer && order.shopCustomerId === customer.id && <CancelOrder orderId={order.id} t={t} />}
 
         {order.paymentMethod === 'whatsapp' && wa && (
           <a href={wa} className="btn btn-primary btn-large" target="_blank" rel="noopener noreferrer">{t.order.whatsappCta}</a>
@@ -77,7 +80,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
           {order.paymentMethod !== 'whatsapp' && wa && (
             <a href={wa} className="btn btn-secondary" target="_blank" rel="noopener noreferrer">{t.footer.whatsapp}</a>
           )}
-          <Link href={`/${locale}/orders`} className="btn btn-secondary">{t.order.myOrders}</Link>
+          {customer && <Link href={`/${locale}/account`} className="btn btn-secondary">{t.order.myOrders}</Link>}
           <Link href={`/${locale}`} className="btn btn-secondary">{t.order.backHome}</Link>
         </div>
       </div>

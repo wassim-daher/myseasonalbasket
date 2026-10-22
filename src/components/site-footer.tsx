@@ -36,7 +36,7 @@ export function SiteFooter({ locale, t, menu, whatsappPhone }: { locale: Locale;
             <li><Link href={`/${locale}/story`}>{t.nav.story}</Link></li>
             <li><Link href={`/${locale}/delivery`}>{t.nav.deliveryTerms}</Link></li>
             <li><Link href={`/${locale}/contact`}>{t.nav.contact}</Link></li>
-            <li><Link href={`/${locale}/orders`}>{t.nav.myOrders}</Link></li>
+            <li><Link href={`/${locale}/account`}>{t.nav.account}</Link></li>
             <li><Link href={`/${locale}/cart`}>{t.nav.cart}</Link></li>
           </ul>
         </div>

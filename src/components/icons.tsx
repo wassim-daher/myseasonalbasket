@@ -5,6 +5,7 @@ const base = (size: number) => ({ width: size, height: size, viewBox: '0 0 24 24
 
 export const SearchIcon = ({ size = 24 }: P) => (<svg {...base(size)}><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>);
 export const CartIcon = ({ size = 24 }: P) => (<svg {...base(size)}><path d="M3 4h2l2.4 10.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2" /><circle cx="9.5" cy="19.5" r="1.3" /><circle cx="17" cy="19.5" r="1.3" /></svg>);
+export const UserIcon = ({ size = 24 }: P) => (<svg {...base(size)}><circle cx="12" cy="8" r="4" /><path d="M4.5 20.5c1.2-3.8 4-5.5 7.5-5.5s6.3 1.7 7.5 5.5" /></svg>);
 export const MenuIcon = ({ size = 28 }: P) => (<svg {...base(size)} strokeWidth={2.2}><path d="M4 7h16M4 12h16M4 17h16" /></svg>);
 export const CloseIcon = ({ size = 24 }: P) => (<svg {...base(size)} strokeWidth={2}><path d="M6 6l12 12M18 6L6 18" /></svg>);
 export const CalendarIcon = ({ size = 18 }: P) => (<svg {...base(size)}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M8 3v4M16 3v4M4 10h16" /></svg>);

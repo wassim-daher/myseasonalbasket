@@ -2,7 +2,7 @@ import 'server-only';
 import { farmId, pool } from './db';
 import type { CheckoutCommand } from '@/lib/checkout';
 import type {
-  Banner, Basket, CatalogProduct, Category, DeliveryOption, MenuCategory, DeliveryZone, MyOrder, OrderSummary, PaymentMethod, PlacedOrder, ShopSettings,
+  Banner, Basket, CatalogProduct, Category, DeliveryOption, MenuCategory, DeliveryZone, OrderSummary, PaymentMethod, PlacedOrder, ShopSettings,
 } from '@/lib/shop-types';
 
 // Everything the store reads or writes goes through these functions. Prices,
@@ -85,8 +85,9 @@ export async function getDeliveryOptions(zoneId: string): Promise<DeliveryOption
 }
 
 /** Places the order. Throws the database's SHOP_* code when it refuses. */
-export async function placeOrder(command: CheckoutCommand): Promise<PlacedOrder> {
+export async function placeOrder(command: CheckoutCommand, shopCustomerId: string | null = null): Promise<PlacedOrder> {
   const payload = {
+    shopCustomerId,
     requestKey: command.requestKey,
     contactName: command.contactName,
     phone: command.phone,
@@ -111,7 +112,7 @@ export async function getOrder(orderId: string): Promise<OrderSummary | null> {
   const { rows } = await pool().query(
     `SELECT o.id, o.reference, o.status, o."contactName", o.phone, o.language, z."nameEn" AS "zoneNameEn", z."nameAr" AS "zoneNameAr",
             to_char(o."deliveryDate",'YYYY-MM-DD') AS "deliveryDate", s."startTime", s."endTime", o."addressLine",
-            o."paymentMethod", o."paymentStatus", to_char(o."createdAt",'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "placedAt", o."subtotalUsd"::text AS "subtotalUsd", o."deliveryFeeUsd"::text AS "deliveryFeeUsd", o."totalUsd"::text AS "totalUsd",
+            o."paymentMethod", o."paymentStatus", o."shopCustomerId"::text AS "shopCustomerId", to_char(o."createdAt",'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "placedAt", o."subtotalUsd"::text AS "subtotalUsd", o."deliveryFeeUsd"::text AS "deliveryFeeUsd", o."totalUsd"::text AS "totalUsd",
             coalesce((SELECT json_agg(json_build_object('kind',l.kind,'name',l."nameSnapshot",'unitName',l."unitNameSnapshot",
                       'quantity',l.quantity,'lineTotalUsd',l."lineTotalUsd"::text) ORDER BY l.kind DESC, l."nameSnapshot")
                       FROM "ShopOrderLine" l WHERE l."orderId"=o.id),'[]') AS lines
@@ -125,29 +126,3 @@ export async function getOrder(orderId: string): Promise<OrderSummary | null> {
   return { ...rows[0], paymentMethod: rows[0].paymentMethod as PaymentMethod };
 }
 
-/** The orders this browser remembers, newest first. Unknown ids are skipped. */
-export async function getMyOrders(ids: string[]): Promise<MyOrder[]> {
-  if (ids.length === 0) return [];
-  const { rows } = await pool().query(
-    `SELECT o.id, o.reference, o.status, o."paymentStatus", o."paymentMethod",
-            to_char(o."deliveryDate",'YYYY-MM-DD') AS "deliveryDate", s."startTime", s."endTime",
-            o."totalUsd"::text AS "totalUsd", to_char(o."createdAt",'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS "placedAt",
-            (SELECT coalesce(sum(l.quantity),0)::int FROM "ShopOrderLine" l WHERE l."orderId"=o.id) AS "itemCount"
-       FROM "ShopOrder" o JOIN "ShopDeliverySlot" s ON s.id=o."slotId"
-      WHERE o."farmId"=$1 AND o.id = ANY($2::uuid[])
-      ORDER BY o."createdAt" DESC`,
-    [farmId(), ids],
-  );
-  return rows as MyOrder[];
-}
-
-/** Finds an order by its reference and the phone number it was placed with (last 8 digits). */
-export async function findOrder(reference: string, phoneLast8: string): Promise<string | null> {
-  if (!/^[A-Z]+-\d{4}-\d{4,6}$/.test(reference) || !/^\d{8}$/.test(phoneLast8)) return null;
-  const { rows } = await pool().query<{ id: string }>(
-    `SELECT id FROM "ShopOrder"
-      WHERE "farmId"=$1 AND reference=$2 AND right(regexp_replace(phone,'\\D','','g'),8)=$3`,
-    [farmId(), reference, phoneLast8],
-  );
-  return rows[0]?.id ?? null;
-}

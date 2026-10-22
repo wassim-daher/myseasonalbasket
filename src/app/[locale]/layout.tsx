@@ -6,6 +6,7 @@ import { CartProvider } from '@/components/cart-context';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { dictionary, direction, isLocale } from '@/lib/i18n';
+import { currentCustomer } from '@/server/account';
 import { getBaskets, getMenu, getSettings } from '@/server/shop';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = dictionary(locale);
-  const { menu, hasBaskets, whatsappPhone } = await shell();
+  const [{ menu, hasBaskets, whatsappPhone }, customer] = await Promise.all([shell(), currentCustomer()]);
   return (
     <html lang={locale} dir={direction(locale)}>
       <head>
@@ -51,7 +52,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
       </head>
       <body>
         <CartProvider>
-          <SiteHeader locale={locale} t={t} menu={menu} hasBaskets={hasBaskets} />
+          <SiteHeader locale={locale} t={t} menu={menu} hasBaskets={hasBaskets} customerName={customer?.name ?? null} />
           <main>{children}</main>
           <SiteFooter locale={locale} t={t} menu={menu} whatsappPhone={whatsappPhone} />
         </CartProvider>
