@@ -91,8 +91,16 @@ export type OrderSummary = {
   endTime: string;
   addressLine: string;
   paymentMethod: PaymentMethod;
+  paymentStatus: 'pending' | 'paid';
+  /** When the order was placed (ISO timestamp). */
+  placedAt: string;
   subtotalUsd: string;
   deliveryFeeUsd: string;
   totalUsd: string;
   lines: { kind: 'product' | 'basket'; name: string; unitName: string; quantity: number; lineTotalUsd: string }[];
+};
+
+/** One row of "My orders". */
+export type MyOrder = Pick<OrderSummary, 'id' | 'reference' | 'status' | 'paymentStatus' | 'paymentMethod' | 'deliveryDate' | 'startTime' | 'endTime' | 'totalUsd' | 'placedAt'> & {
+  itemCount: number;
 };

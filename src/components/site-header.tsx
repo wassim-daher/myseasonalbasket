@@ -111,6 +111,7 @@ export function SiteHeader({ locale, t, menu, hasBaskets }: Props) {
               </ul>
             </nav>
             <div className="drawer-links">
+              <Link href={`/${locale}/orders`} className="drawer-orders">{t.nav.myOrders}</Link>
               <Link href={`/${locale}`}>{t.nav.home}</Link>
               <Link href={`/${locale}/products`}>{t.shop.allTitle}</Link>
               <Link href={`/${locale}/delivery`}>{t.nav.deliveryTerms}</Link>
